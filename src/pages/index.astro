@@ -1,0 +1,10 @@
+---
+import BlogContainer from '../components/BlogContainer.astro';
+import Layout from '../layouts/Layout.astro';
+
+const posts = await Astro.glob('./blog/*.md');
+---
+
+<Layout title="Pitticus's Blog">
+    <BlogContainer posts={posts} />
+</Layout>

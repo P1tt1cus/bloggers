@@ -1,0 +1,283 @@
+---
+---
+<div id="search-modal" class="search-modal hidden">
+    <div class="search-container">
+        <div class="search-header">
+            <span class="prompt">:</span>
+            <span class="command">%s/</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Search..." />
+        </div>
+        <div id="search-results" class="search-results"></div>
+    </div>
+</div>
+
+<style>
+    .search-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .search-modal.hidden {
+        display: none;
+    }
+
+    .search-container {
+        background: var(--nvim-dark);
+        border: 1px solid var(--nvim-gray);
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .search-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-bottom: 1px solid var(--nvim-gray);
+    }
+
+    .prompt {
+        color: var(--nvim-green);
+    }
+
+    .command {
+        color: var(--nvim-blue);
+    }
+
+    .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--nvim-fg);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .search-results {
+        overflow-y: auto;
+        padding: 0.5rem;
+        max-height: calc(80vh - 4rem);
+    }
+
+    .search-result {
+        padding: 0.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        border-radius: 4px;
+        margin: 0.25rem 0;
+        height: 36px;
+        line-height: 24px;
+        cursor: pointer;
+    }
+
+    .search-result.selected {
+        background: var(--nvim-statusline);
+        border: 1px solid var(--nvim-blue);
+        margin: 0.5rem 0;
+    }
+
+    .result-cursor {
+        color: var(--nvim-green);
+        opacity: 0;
+        width: 1rem;
+    }
+
+    .search-result.selected .result-cursor {
+        opacity: 1;
+    }
+
+    .result-line {
+        color: var(--nvim-gray);
+        min-width: 3rem;
+    }
+
+    .result-text {
+        color: var(--nvim-fg);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .highlight {
+        color: var(--nvim-green);
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    let currentSearchIndex = -1;
+    let searchResults: NodeListOf<Element>;
+
+    function setupSearch() {
+        const searchModal = document.getElementById('search-modal');
+        const searchInput = document.getElementById('search-input') as HTMLInputElement;
+        const searchResultsContainer = document.getElementById('search-results');
+
+        if (!searchModal || !searchInput || !searchResultsContainer) return;
+
+        function escapeRegExp(string: string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function performSearch() {
+            const query = searchInput.value;
+            const content = document.querySelector('.content');
+            if (!content || !query) {
+                searchResultsContainer.innerHTML = '';
+                return;
+            }
+
+            const text = content.textContent || '';
+            const lines = text.split('\n');
+            let results: { line: string; index: number }[] = [];
+
+            try {
+                const regex = new RegExp(query, 'gi');
+                results = lines
+                    .map((line, index) => ({ line, index: index + 1 }))
+                    .filter(({ line }) => regex.test(line));
+
+                searchResultsContainer.innerHTML = results
+                    .map(({ line, index }) => {
+                        regex.lastIndex = 0;
+                        const highlightedText = line.replace(regex, match => 
+                            `<span class="highlight">${match}</span>`
+                        );
+                        return `
+                            <div class="search-result" data-line="${index}">
+                                <span class="result-cursor">→</span>
+                                <span class="result-line">${index}</span>
+                                <span class="result-text">${highlightedText}</span>
+                            </div>
+                        `;
+                    })
+                    .join('');
+            } catch (e) {
+                // Fallback to plain text search if regex fails
+                const escapedQuery = escapeRegExp(query);
+                const plainTextRegex = new RegExp(escapedQuery, 'gi');
+                results = lines
+                    .map((line, index) => ({ line, index: index + 1 }))
+                    .filter(({ line }) => plainTextRegex.test(line));
+
+                searchResultsContainer.innerHTML = results
+                    .map(({ line, index }) => {
+                        plainTextRegex.lastIndex = 0;
+                        const highlightedText = line.replace(plainTextRegex, match => 
+                            `<span class="highlight">${match}</span>`
+                        );
+                        return `
+                            <div class="search-result" data-line="${index}">
+                                <span class="result-cursor">→</span>
+                                <span class="result-line">${index}</span>
+                                <span class="result-text">${highlightedText}</span>
+                            </div>
+                        `;
+                    })
+                    .join('');
+            }
+
+            currentSearchIndex = -1;
+            searchResults = document.querySelectorAll('.search-result');
+            if (searchResults.length > 0) {
+                selectNextResult(); // Auto-select first result
+            }
+        }
+
+        function scrollToLine(lineNumber: number) {
+            const lineHeight = 24;
+            window.scrollTo({
+                top: (lineNumber - 1) * lineHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function selectNextResult() {
+            if (!searchResults?.length) return;
+            searchResults.forEach(result => result.classList.remove('selected'));
+            currentSearchIndex = (currentSearchIndex + 1) % searchResults.length;
+            const selectedResult = searchResults[currentSearchIndex];
+            selectedResult.classList.add('selected');
+            selectedResult.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        function selectPreviousResult() {
+            if (!searchResults?.length) return;
+            searchResults.forEach(result => result.classList.remove('selected'));
+            currentSearchIndex = currentSearchIndex <= 0 ? 
+                searchResults.length - 1 : 
+                currentSearchIndex - 1;
+            const selectedResult = searchResults[currentSearchIndex];
+            selectedResult.classList.add('selected');
+            selectedResult.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        function handleSelectedResult() {
+            if (currentSearchIndex >= 0 && searchResults?.[currentSearchIndex]) {
+                const lineNumber = searchResults[currentSearchIndex].getAttribute('data-line');
+                if (lineNumber) {
+                    scrollToLine(parseInt(lineNumber));
+                    searchModal.classList.add('hidden');
+                }
+            }
+        }
+
+        // Add click handler for results
+        searchResultsContainer.addEventListener('click', (e) => {
+            const result = (e.target as HTMLElement).closest('.search-result');
+            if (result) {
+                const lineNumber = result.getAttribute('data-line');
+                if (lineNumber) {
+                    scrollToLine(parseInt(lineNumber));
+                    searchModal.classList.add('hidden');
+                }
+            }
+        });
+
+        searchInput.addEventListener('input', performSearch);
+        searchInput.addEventListener('keydown', (e) => {
+            e.stopPropagation();
+            
+            switch(e.key) {
+                case 'Tab':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        selectPreviousResult();
+                    } else {
+                        selectNextResult();
+                    }
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    handleSelectedResult();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    searchModal.classList.add('hidden');
+                    break;
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchModal.contains(e.target as Node)) {
+                searchModal.classList.add('hidden');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupSearch);
+</script>

@@ -1,0 +1,58 @@
+---
+import BlogPost from './BlogPost.astro';
+
+interface Props {
+    posts: any[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div id="post-list">
+    <header>
+        <div class="vim-info">
+            <span class="filename">index.md</span>
+            <span class="file-type">[markdown]</span>
+        </div>
+        <h1 class="vim-header"># Pitticus's Blog</h1>
+    </header>
+    <section class="posts">
+        {posts.map(post => (
+            <BlogPost
+                title={post.frontmatter.title}
+                date={post.frontmatter.date}
+                slug={post.frontmatter.slug}
+                description={post.frontmatter.description}
+                content={post.compiledContent()}
+            />
+        ))}
+    </section>
+</div>
+
+<style>
+    .vim-info {
+        color: var(--nvim-gray);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        height: 24px;
+    }
+
+    .filename {
+        color: var(--nvim-blue);
+    }
+
+    .vim-header {
+        color: var(--nvim-green);
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        height: 48px;
+        line-height: 48px;
+    }
+
+    #post-list.hidden {
+        display: none;
+    }
+</style>

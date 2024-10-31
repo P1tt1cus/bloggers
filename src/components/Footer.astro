@@ -1,0 +1,72 @@
+---
+---
+<div class="nvim-footer">
+    <div class="vim-command">
+        <span class="prompt">:</span>
+        <span class="command-text">e index.md</span>
+    </div>
+    <div class="status">
+        <span class="git-branch">main</span>
+        <span class="file-position">100%</span>
+    </div>
+</div>
+
+<style>
+    .nvim-footer {
+        background: var(--nvim-statusline);
+        padding: 0.3rem 1rem;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        height: 32px;
+        align-items: center;
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+    }
+
+    .vim-command {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .vim-command:hover .command-text {
+        text-decoration: underline;
+    }
+
+    .prompt {
+        color: var(--nvim-green);
+    }
+
+    .command-text {
+        color: var(--nvim-blue);
+    }
+
+    .status {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .git-branch, .file-position {
+        color: var(--nvim-gray);
+    }
+</style>
+
+<script>
+    document.querySelector('.vim-command')?.addEventListener('click', () => {
+        const postContent = document.getElementById('post-content');
+        const postList = document.getElementById('post-list');
+        
+        if (postContent) {
+            postContent.innerHTML = '';
+            postContent.classList.add('hidden');
+        }
+        postList?.classList.remove('hidden');
+        
+        // Trigger line numbers update
+        const event = new Event('contentchange');
+        document.dispatchEvent(event);
+    });
+</script>

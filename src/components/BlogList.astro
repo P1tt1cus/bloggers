@@ -1,0 +1,31 @@
+---
+import BlogPost from './BlogPost.astro';
+import VimNavigation from './VimNavigation.astro';
+
+interface Props {
+    posts: any[];
+}
+
+const { posts } = Astro.props;
+const sortedPosts = posts.sort((a, b) => 
+    new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
+);
+---
+
+<div class="blog-list">
+    <VimNavigation />
+    {sortedPosts.map(post => (
+        <BlogPost
+            title={post.frontmatter.title}
+            date={post.frontmatter.date}
+            slug={post.frontmatter.slug}
+            description={post.frontmatter.description}
+        />
+    ))}
+</div>
+
+<style>
+    .blog-list {
+        margin-top: 2rem;
+    }
+</style>

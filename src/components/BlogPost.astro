@@ -1,0 +1,66 @@
+---
+interface Props {
+    title: string;
+    date: string;
+    slug: string;
+    description: string;
+    content?: string;
+}
+
+const { title, date, slug, description, content } = Astro.props;
+---
+
+<article 
+    class="blog-post" 
+    data-title={title}
+    data-date={date}
+    data-content={content}
+    data-slug={slug}
+>
+    <div class="post-header">
+        <span class="line-start">~</span>
+        <span class="post-title">{title}</span>
+    </div>
+    <div class="post-meta">
+        <span class="date">{date}</span>
+        <p class="description">" {description}</p>
+    </div>
+</article>
+
+<style>
+    .blog-post {
+        margin-bottom: 1.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .blog-post:hover {
+        background: var(--nvim-dark);
+    }
+    .post-header {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 1.1rem;
+        height: 24px;
+    }
+    .line-start {
+        color: var(--nvim-green);
+        font-weight: 600;
+    }
+    .post-title {
+        color: var(--nvim-blue);
+    }
+    .date {
+        color: var(--nvim-gray);
+        font-size: 0.9rem;
+    }
+    .description {
+        color: var(--nvim-gray);
+        margin-top: 0.3rem;
+        margin-left: 1.5rem;
+        font-size: 0.9rem;
+        font-style: italic;
+        height: 24px;
+    }
+</style>

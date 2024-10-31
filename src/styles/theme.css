@@ -1,0 +1,153 @@
+:root {
+  --nvim-bg: #1a1b26;
+  --nvim-fg: #a9b1d6;
+  --nvim-green: #9ece6a;
+  --nvim-blue: #7aa2f7;
+  --nvim-gray: #565f89;
+  --nvim-dark: #16161e;
+  --nvim-statusline: #24283b;
+}
+
+/* Post Content Styles */
+#post-content {
+  padding: 1rem 0;
+}
+
+#post-content .post-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  height: 24px;
+  margin-bottom: 1rem;
+}
+
+#post-content .back-link {
+  color: var(--nvim-blue);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+#post-content .back-link:hover {
+  text-decoration: underline;
+}
+
+#post-content .post-title {
+  color: var(--nvim-blue);
+  font-weight: 600;
+}
+
+#post-content .post-date {
+  color: var(--nvim-gray);
+  font-style: italic;
+}
+
+/* Vim Navigation Styles */
+.blog-post.selected {
+  background: var(--nvim-dark);
+  outline: 1px solid var(--nvim-blue);
+}
+
+/* Markdown Content Styles */
+#post-content h1 {
+  color: var(--nvim-green);
+  font-size: 2rem;
+  margin: 1rem 0;
+  border-bottom: 1px solid var(--nvim-gray);
+  padding-bottom: 0.5rem;
+  height: 48px;
+  line-height: 48px;
+}
+
+#post-content h2 {
+  color: var(--nvim-blue);
+  font-size: 1.5rem;
+  margin: 1.5rem 0 1rem;
+  height: 36px;
+  line-height: 36px;
+}
+
+#post-content h3 {
+  color: var(--nvim-blue);
+  font-size: 1.2rem;
+  margin: 1.2rem 0 0.8rem;
+  height: 30px;
+  line-height: 30px;
+}
+
+#post-content p {
+  margin: 1rem 0;
+  line-height: 24px;
+  min-height: 24px;
+}
+
+#post-content pre {
+  background: var(--nvim-dark);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--nvim-gray);
+  line-height: 24px;
+}
+
+#post-content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--nvim-statusline);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+#post-content pre code {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+#post-content ul,
+#post-content ol {
+  margin: 1rem 0 1rem 2rem;
+  color: var(--nvim-fg);
+}
+
+#post-content li {
+  margin: 0.5rem 0;
+  position: relative;
+  line-height: 24px;
+  min-height: 24px;
+}
+
+#post-content li::marker {
+  color: var(--nvim-blue);
+}
+
+#post-content blockquote {
+  border-left: 3px solid var(--nvim-blue);
+  margin: 1.5rem 0;
+  padding: 0.5rem 0 0.5rem 1rem;
+  color: var(--nvim-gray);
+  background: var(--nvim-dark);
+  min-height: 24px;
+}
+
+#post-content a {
+  color: var(--nvim-blue);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--nvim-blue);
+}
+
+#post-content a:hover {
+  border-bottom-style: solid;
+}
+
+#post-content strong {
+  color: var(--nvim-green);
+  font-weight: 600;
+}
+
+#post-content em {
+  color: var(--nvim-blue);
+  font-style: italic;
+}

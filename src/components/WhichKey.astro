@@ -1,0 +1,149 @@
+---
+---
+<div id="which-key" class="which-key hidden">
+    <div class="which-key-content">
+        <div class="which-key-header">Which Key</div>
+        <div class="which-key-items">
+            <div class="which-key-item">
+                <span class="key">j/k</span>
+                <span class="description">Navigate posts</span>
+            </div>
+            <div class="which-key-item">
+                <span class="key">enter</span>
+                <span class="description">Open post</span>
+            </div>
+            <div class="which-key-item">
+                <span class="key">g/G</span>
+                <span class="description">Go to top/bottom</span>
+            </div>
+            <div class="which-key-item">
+                <span class="key">esc</span>
+                <span class="description">Return to index</span>
+            </div>
+            <div class="which-key-item">
+                <span class="key">space + s</span>
+                <span class="description">Search</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .which-key {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--nvim-dark);
+        border: 1px solid var(--nvim-gray);
+        border-radius: 8px;
+        padding: 1rem;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        min-width: 300px;
+    }
+
+    .which-key.hidden {
+        display: none;
+    }
+
+    .which-key-header {
+        color: var(--nvim-green);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--nvim-gray);
+    }
+
+    .which-key-items {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .which-key-item {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .key {
+        color: var(--nvim-blue);
+        font-weight: 600;
+        background: var(--nvim-statusline);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .description {
+        color: var(--nvim-fg);
+    }
+</style>
+
+<script>
+    let whichKeyTimeout: number | null = null;
+    let spacePressed = false;
+
+    document.addEventListener('keydown', (e) => {
+        const whichKey = document.getElementById('which-key');
+        const searchModal = document.getElementById('search-modal');
+        const searchInput = document.getElementById('search-input') as HTMLInputElement;
+        const postContent = document.getElementById('post-content');
+        const postList = document.getElementById('post-list');
+        
+        if (!whichKey || !searchModal) return;
+
+        if (e.key === ' ') {
+            e.preventDefault();
+            spacePressed = true;
+            whichKey.classList.remove('hidden');
+            
+            // Clear existing timeout if any
+            if (whichKeyTimeout) {
+                clearTimeout(whichKeyTimeout);
+            }
+        } else if (spacePressed && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            whichKey.classList.add('hidden');
+            searchModal.classList.remove('hidden');
+            searchInput?.focus();
+            spacePressed = false;
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            if (postContent && !postContent.classList.contains('hidden')) {
+                postContent.innerHTML = '';
+                postContent.classList.add('hidden');
+                postList?.classList.remove('hidden');
+                
+                // Trigger line numbers update
+                document.dispatchEvent(new Event('contentchange'));
+            }
+            spacePressed = false;
+        } else {
+            spacePressed = false;
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        const whichKey = document.getElementById('which-key');
+        if (!whichKey) return;
+
+        if (e.key === ' ' && !document.getElementById('search-modal')?.contains(document.activeElement)) {
+            // Set timeout to hide the which-key menu
+            whichKeyTimeout = setTimeout(() => {
+                whichKey.classList.add('hidden');
+            }, 100) as unknown as number;
+        }
+    });
+
+    // Hide which-key when clicking outside
+    document.addEventListener('click', (e) => {
+        const whichKey = document.getElementById('which-key');
+        if (!whichKey) return;
+
+        if (!whichKey.contains(e.target as Node)) {
+            whichKey.classList.add('hidden');
+        }
+    });
+</script>

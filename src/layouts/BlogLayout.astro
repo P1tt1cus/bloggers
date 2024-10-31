@@ -1,0 +1,185 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+    title: string;
+    date: string;
+    slug: string;
+}
+
+const { title, date, slug } = Astro.props;
+---
+
+<Layout title={`${title} | Pitticus@Terminal:~/blog`}>
+    <div class="nvim-container">
+        <div class="nvim-header">
+            <span class="mode-indicator">NORMAL</span>
+            <span class="file-path">~/blog/{slug}.md</span>
+            <span class="file-info">[markdown]</span>
+        </div>
+        <main>
+            <div class="line-numbers">
+                {Array.from({ length: 50 }, (_, i) => (
+                    <span>{i + 1}</span>
+                ))}
+            </div>
+            <div class="content">
+                <div class="vim-info">
+                    <span class="filename">{title}</span>
+                    <span class="date">{date}</span>
+                </div>
+                <slot />
+            </div>
+        </main>
+        <div class="nvim-footer">
+            <div class="vim-command">
+                <span class="prompt">:</span>
+                <a href="/" class="command-link">e index.md</a>
+            </div>
+            <span class="git-branch">main</span>
+            <span class="file-position">100%</span>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    .vim-info {
+        color: var(--nvim-gray);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .filename {
+        color: var(--nvim-blue);
+    }
+
+    .date {
+        color: var(--nvim-gray);
+        font-style: italic;
+    }
+
+    .content {
+        flex: 1;
+        padding: 1rem 0;
+    }
+
+    /* Headers */
+    .content :global(h1) {
+        color: var(--nvim-green);
+        font-size: 2rem;
+        margin: 1rem 0;
+        border-bottom: 1px solid var(--nvim-gray);
+        padding-bottom: 0.5rem;
+    }
+
+    .content :global(h2) {
+        color: var(--nvim-blue);
+        font-size: 1.5rem;
+        margin: 1.5rem 0 1rem;
+    }
+
+    .content :global(h3) {
+        color: var(--nvim-blue);
+        font-size: 1.2rem;
+        margin: 1.2rem 0 0.8rem;
+    }
+
+    /* Text content */
+    .content :global(p) {
+        margin: 1rem 0;
+        line-height: 1.6;
+    }
+
+    /* Code blocks */
+    .content :global(pre) {
+        background: var(--nvim-dark);
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        border: 1px solid var(--nvim-gray);
+    }
+
+    .content :global(code) {
+        font-family: 'JetBrains Mono', monospace;
+        background: var(--nvim-statusline);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    .content :global(pre code) {
+        background: none;
+        padding: 0;
+        border: none;
+    }
+
+    /* Lists */
+    .content :global(ul), .content :global(ol) {
+        margin: 1rem 0 1rem 2rem;
+        color: var(--nvim-fg);
+    }
+
+    .content :global(li) {
+        margin: 0.5rem 0;
+        position: relative;
+    }
+
+    .content :global(li::marker) {
+        color: var(--nvim-blue);
+    }
+
+    /* Blockquotes */
+    .content :global(blockquote) {
+        border-left: 3px solid var(--nvim-blue);
+        margin: 1.5rem 0;
+        padding: 0.5rem 0 0.5rem 1rem;
+        color: var(--nvim-gray);
+        background: var(--nvim-dark);
+    }
+
+    /* Links */
+    .content :global(a) {
+        color: var(--nvim-blue);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--nvim-blue);
+    }
+
+    .content :global(a:hover) {
+        border-bottom-style: solid;
+    }
+
+    /* Command prompt */
+    .vim-command {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .prompt {
+        color: var(--nvim-green);
+    }
+
+    .command-link {
+        color: var(--nvim-blue);
+        text-decoration: none;
+    }
+
+    .command-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Inline elements */
+    .content :global(strong) {
+        color: var(--nvim-green);
+        font-weight: 600;
+    }
+
+    .content :global(em) {
+        color: var(--nvim-blue);
+        font-style: italic;
+    }
+</style>
