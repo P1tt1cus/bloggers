@@ -29,10 +29,11 @@ try {
                 date: new Date().toISOString().split('T')[0],
                 description: 'HTML content'
             },
-            // Return a function that gives the URL to the public HTML file
-            compiledContent: () => `<p><a href="/bloggers/blog/${slug}.html" target="_blank">View ${title}</a></p>`,
+            // Don't provide compiledContent for external posts - let JavaScript handle direct navigation
+            compiledContent: () => '', // Empty content so JavaScript handles the external link
             type: 'html',
-            isExternal: true
+            isExternal: true,
+            directUrl: `/bloggers/blog/${slug}.html` // Add direct URL for immediate access
         });
     }
 } catch (error) {
