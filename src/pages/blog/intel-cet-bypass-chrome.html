@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1200, initial-scale=1.0">
     <title>Infographic: Bypassing Intel CET Shadow Stack</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,6 +15,7 @@
             font-weight: 300; /* Light weight */
             background-color: #000000;
             color: #EAEAEA;
+            min-width: 1200px;
         }
         
         /* Ensure ALL code elements use Consolas with better visibility */
@@ -90,13 +91,8 @@
             max-width: 600px; 
             margin-left: auto; 
             margin-right: auto; 
-            height: 300px;
+            height: 350px;
             max-height: 400px; 
-        }
-        @media (min-width: 768px) { 
-            .chart-container { 
-                height: 350px; 
-            } 
         }
         .stack-diagram {
             font-size: 0.8rem;
@@ -283,6 +279,17 @@
             background: transparent !important;
             background: none !important;
         }
+        
+        /* Override all Tailwind responsive classes to be fixed */
+        @media (max-width: 9999px) {
+            .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+            .md\\:mb-24 { margin-bottom: 6rem !important; }
+            .md\\:text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
+            .md\\:text-6xl { font-size: 3.75rem !important; line-height: 1 !important; }
+            .md\\:text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+            .md\\:py-16 { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+        }
     </style>
 </head>
 <!-- ...existing code... -->
@@ -296,17 +303,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 <body class="antialiased">
 
-    <div class="container mx-auto px-4 py-8 md:py-16">
+    <div class="container mx-auto px-4 py-16">
 
-        <header class="text-center mb-16 md:mb-24">
-            <h1 class="text-4xl md:text-6xl tracking-tight leading-tight text-white">Bypassing Intel CET Shadow Stack</h1>
-            <p class="text-lg md:text-xl text-gray-400 mt-4 max-w-3xl mx-auto">An infographic detailing the CVE-2023-3598 "SwiftZero" Chrome sandbox escape which bypasses Intel CET Shadow Stack on Windows x64.</p>
+        <header class="text-center mb-24">
+            <h1 class="text-6xl tracking-tight leading-tight text-white">Bypassing Intel CET Shadow Stack</h1>
+            <p class="text-xl text-gray-400 mt-4 max-w-3xl mx-auto">An infographic detailing the CVE-2023-3598 "SwiftZero" Chrome sandbox escape which bypasses Intel CET Shadow Stack on Windows x64.</p>
         </header>
 
         <!-- First Section CET Shadow Stack Example -->
-        <section id="fortress" class="mb-16 md:mb-24">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-white">Intel CET ShadowStack</h2>
-            <div class="grid md:grid-cols-2 gap-8 items-center">
+        <section id="fortress" class="mb-24">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">Intel CET ShadowStack</h2>
+            <div class="grid grid-cols-2 gap-8 items-center">
                 <div class="stat-card">
                     <h3 class="font-bold text-xl mb-3 text-white">A Hardware Defense</h3>
                     <p class="text-gray-300">Intel's Control-flow Enforcement Technology (CET) is a hardware-level defense. Its key feature for this talk is the <span class="font-bold">Shadow Stack</span>, a CPU-protected stack that creates a secure record of return addresses to prevent backward-edge control flow attacks.</p>
@@ -320,7 +327,7 @@
             <div class="mt-16">
                  <h3 class="text-2xl font-bold text-center mb-8 text-white">Normal Function Call with CET</h3>
                  <div class="stat-card p-8">
-                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                     <div class="grid grid-cols-2 gap-8 items-start">
                          <div>
                              <h4 class="font-semibold text-center mb-4 text-white">1. Example Code</h4>
                              <div class="code-block text-s">
@@ -378,7 +385,7 @@ void main() {
             <div class="mt-16">
                  <h3 class="text-2xl font-bold text-center mb-8 text-white">How CET Defeats ROP</h3>
                  <div class="stat-card p-8">
-                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                     <div class="grid grid-cols-2 gap-8 items-start">
                          <div>
                              <h4 class="font-semibold text-center mb-4 text-white">1. ROP Gadget</h4>
                              <div class="code-block text-s">
