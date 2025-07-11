@@ -5,9 +5,11 @@ interface Props {
     slug: string;
     description: string;
     content?: string;
+    isExternal?: boolean;
 }
 
-const { title, date, slug, description, content } = Astro.props;
+const { title, date, slug, description, content, isExternal } = Astro.props;
+const linkUrl = isExternal ? `/blog/${slug}.html` : `/${slug}`;
 ---
 
 <article 
@@ -16,10 +18,13 @@ const { title, date, slug, description, content } = Astro.props;
     data-date={date}
     data-content={content}
     data-slug={slug}
+    data-external={isExternal}
+    data-link-url={linkUrl}
 >
     <div class="post-header">
         <span class="line-start">~</span>
         <span class="post-title">{title}</span>
+        {isExternal && <span class="external-indicator">[HTML]</span>}
     </div>
     <div class="post-meta">
         <span class="date">{date}</span>
@@ -50,6 +55,11 @@ const { title, date, slug, description, content } = Astro.props;
     }
     .post-title {
         color: var(--nvim-blue);
+    }
+    .external-indicator {
+        color: var(--nvim-green);
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
     }
     .date {
         color: var(--nvim-gray);

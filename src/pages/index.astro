@@ -1,10 +1,47 @@
 ---
 import BlogContainer from '../components/BlogContainer.astro';
 import Layout from '../layouts/Layout.astro';
+import { readFileSync, readdirSync } from 'fs';
+import { join } from 'path';
 
 const posts = await Astro.glob('./blog/*.md');
+
+// Read HTML files manually since Astro.glob treats them as components
+const htmlPosts = [];
+try {
+    const blogDir = join(process.cwd(), 'src/pages/blog');
+    const files = readdirSync(blogDir);
+    const htmlFiles = files.filter(file => file.endsWith('.html'));
+    
+    for (const filename of htmlFiles) {
+        const slug = filename.replace('.html', '');
+        const filePath = join(blogDir, filename);
+        const htmlContent = readFileSync(filePath, 'utf-8');
+        
+        // Extract title from HTML if it exists, otherwise use filename
+        const titleMatch = htmlContent.match(/<title>(.*?)<\/title>/i);
+        const title = titleMatch ? titleMatch[1] : slug;
+        
+        htmlPosts.push({
+            frontmatter: {
+                title,
+                slug,
+                date: new Date().toISOString().split('T')[0],
+                description: 'HTML content'
+            },
+            // Return a function that gives the URL to the public HTML file
+            compiledContent: () => `<p><a href="/bloggers/blog/${slug}.html" target="_blank">View ${title}</a></p>`,
+            type: 'html',
+            isExternal: true
+        });
+    }
+} catch (error) {
+    console.log('No HTML files found or error reading them:', error);
+}
+
+const allPosts = [...posts, ...htmlPosts];
 ---
 
 <Layout title="Pitticus's Blog">
-    <BlogContainer posts={posts} />
+    <BlogContainer posts={allPosts} />
 </Layout>

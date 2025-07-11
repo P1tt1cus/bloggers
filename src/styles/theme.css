@@ -1,11 +1,11 @@
 :root {
-  --nvim-bg: #1a1b26;
-  --nvim-fg: #a9b1d6;
-  --nvim-green: #9ece6a;
-  --nvim-blue: #7aa2f7;
-  --nvim-gray: #565f89;
-  --nvim-dark: #16161e;
-  --nvim-statusline: #24283b;
+  --nvim-bg: #000000;
+  --nvim-fg: #ffffff;
+  --nvim-green: #ffffff;
+  --nvim-blue: #cccccc;
+  --nvim-gray: #666666;
+  --nvim-dark: #111111;
+  --nvim-statusline: #1a1a1a;
 }
 
 /* Post Content Styles */

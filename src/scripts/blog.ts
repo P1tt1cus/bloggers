@@ -39,15 +39,23 @@ function setupPostNavigation() {
   // Click handler for posts
   posts.forEach((post, index) => {
     post.addEventListener('click', () => {
-      const content = post.getAttribute('data-content');
+      const isExternal = post.getAttribute('data-external') === 'true';
+      const linkUrl = post.getAttribute('data-link-url');
       
-      if (content) {
-        postList?.classList.add('hidden');
-        postContent?.classList.remove('hidden');
-        postContent.innerHTML = content;
+      if (isExternal && linkUrl) {
+        // Open HTML files in a new tab
+        window.open(linkUrl, '_blank');
+      } else {
+        const content = post.getAttribute('data-content');
         
-        // Trigger line numbers update
-        document.dispatchEvent(new Event('contentchange'));
+        if (content) {
+          postList?.classList.add('hidden');
+          postContent?.classList.remove('hidden');
+          postContent.innerHTML = content;
+          
+          // Trigger line numbers update
+          document.dispatchEvent(new Event('contentchange'));
+        }
       }
     });
   });

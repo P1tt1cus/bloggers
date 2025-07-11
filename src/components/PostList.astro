@@ -24,6 +24,7 @@ const { posts } = Astro.props;
                 slug={post.frontmatter.slug}
                 description={post.frontmatter.description}
                 content={post.compiledContent()}
+                isExternal={post.isExternal}
             />
         ))}
     </section>
