@@ -26,66 +26,259 @@
             min-width: 1200px;
         }
         /* Ensure ALL code elements use Consolas with better visibility */
-        code, pre, .code-block, .stack-diagram, .object-diagram, .disassembly-line, .offset, pre code, pre.line-numbers code {
+        code, 
+        pre, 
+        .code-block,
+        .stack-diagram,
+        .object-diagram,
+        .disassembly-line,
+        .offset,
+        pre code,
+        pre.line-numbers code {
             font-family: 'Consolas', 'Courier New', monospace !important;
-            font-weight: 500 !important;
+            font-weight: 500 !important; /* Medium weight for better visibility */
             -webkit-font-smoothing: antialiased !important;
             -moz-osx-font-smoothing: grayscale !important;
         }
-        code[class*="language-"], pre[class*="language-"] {
+        /* Override Prism's font-family */
+        code[class*="language-"],
+        pre[class*="language-"] {
             font-family: 'Consolas', 'Courier New', monospace !important;
-            font-weight: 500 !important;
-            font-size: 0.9rem !important;
-            line-height: 1.5 !important;
+            font-weight: 500 !important; /* Medium weight */
+            font-size: 0.9rem !important; /* Slightly larger */
+            line-height: 1.5 !important; /* Better line spacing */
         }
+        /* Make inline code more visible */
         code {
             background-color: rgba(255, 255, 255, 0.1);
             padding: 0.1rem 0.3rem;
             border-radius: 3px;
             font-weight: 600 !important;
         }
-        p, span, div, li, ul, ol, td, th, label, input, textarea, select, button { font-family: inherit; }
-        .disassembly-line .annotation { font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; font-style: italic; }
-        .code-block { background-color: rgba(30,30,30,0.9); border-left: 3px solid #FFFFFF; padding: 1rem; border-radius: 0 8px 8px 0; white-space: pre-wrap; font-size: 0.9rem; }
-        .stat-card { background: rgba(0,0,0,0.05); backdrop-filter: blur(10px); border-radius: 0.75rem; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); border-color: #FFFFFF; }
-        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; }
-        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
-        .stack-diagram { font-size: 0.8rem; line-height: 1.5; }
-        .stack-box { border: 1px solid #4A5568; padding: 0.25rem 0.5rem; margin-bottom: -1px; color: #ffffff; font-weight: bold; }
-        .stack-label { color: #ffffff; font-size: 0.75rem; }
-        .arrow { color: #ffffff; }
-        .highlight-red { color: #F56565; background-color: rgba(245,101,101,0.1); }
-        .highlight-green { color: #68D391; }
-        .highlight-yellow { color: #F6E05E; }
-        .highlight-blue { color: #ede863; background-color: rgba(99,179,237,0.1); }
-        .line-comment { text-align: left !important; margin-left: 0 !important; padding-left: 0 !important; font-weight: 600; }
-        .exploit-chain-box { border: 1px solid #000000; padding: 1rem; border-radius: 0.5rem; text-align: center; }
-        .exploit-chain-arrow { font-size: 2rem; color: #A0AEC0; margin: 0.5rem 0; }
-        .disassembly-line { display: flex; align-items: center; }
-        .object-diagram { display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 1rem; flex-wrap: wrap; }
-        .object-box { border: 1px solid #666; background-color: #2D2D2D; padding: 0.5rem; border-radius: 0.25rem; }
-        .object-field { display: flex; justify-content: space-between; border-bottom: 1px dashed #444; padding: 0.25rem 0; }
-        .object-field:last-child { border-bottom: none; }
-        .offset { color: #A0AEC0; margin-right: 1rem; }
-        .pointer-arrow { font-size: 1.5rem; color: #A0AEC0; }
-        .timeline { position: relative; max-width: 36rem; margin: 0 auto; }
-        .timeline-item { position: relative; padding-left: 4rem; padding-bottom: 2rem; border-left: 2px solid #4A5568; }
-        .timeline-item:last-child { border-left-color: transparent; }
-        .code-block .comment-red { color: #F56565; background-color: rgba(245,101,101,0.1); }
-        .code-block .comment-yellow { color: #F6E05E; }
-        .timeline-dot { position: absolute; left: -0.8rem; top: 0; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background-color: #000000; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; }
-        .timeline-year { position: absolute; left: -5rem; top: 0.1rem; width: 4rem; text-align: right; font-weight: bold; color: #A0AEC0; }
-        pre.line-numbers { position: relative; padding-left: 3.8em; counter-reset: linenumber; }
-        pre.line-numbers > code { position: relative; white-space: inherit; }
-        .line-numbers .line-numbers-rows { position: absolute; pointer-events: none; top: 0; font-size: 100%; left: -3.8em; width: 3em; letter-spacing: -1px; border-right: 1px solid #999; user-select: none; }
-        .line-numbers-rows > span { display: block; counter-increment: linenumber; }
-        .line-numbers-rows > span:before { content: counter(linenumber); color: #999; display: block; padding-right: 0.8em; text-align: right; }
-        .line-numbers-rows > span[data-highlighted="true"]:before { color: #F6E05E; font-weight: bold !important; }
-        .line-highlight { background: transparent !important; }
+        /* Ensure non-code elements use Aptos */
+        p, span, div, li, ul, ol, td, th, label, input, textarea, select, button {
+            font-family: inherit; /* Will inherit Aptos from body */
+        }
+        /* Annotations should use Aptos, not Consolas */
+        .disassembly-line .annotation {
+            font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            font-style: italic;
+        }
+        .code-block {
+            background-color: rgba(30,30,30,0.9); /* Darker background for better contrast */
+            border-left: 3px solid #FFFFFF;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            white-space: pre-wrap;
+            font-size: 0.9rem; /* Slightly larger */
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #FFFFFF;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+        }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 350px;
+            max-height: 400px; 
+        }
+        .stack-diagram {
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .stack-box {
+            border: 1px solid #4A5568;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: -1px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .stack-label {
+            color: #ffffff;
+            font-size: 0.75rem;
+        }
+        .arrow {
+            color: #ffffff;
+        }
+        .highlight-red {
+            color: #F56565;
+            background-color: rgba(245, 101, 101, 0.1);
+        }
+        .highlight-green {
+            color: #68D391;
+        }
+        .highlight-yellow {
+            color: #F6E05E;
+        }
+        .highlight-blue {
+            color: #ede863;
+            background-color: rgba(99, 179, 237, 0.1);
+        }
+        .line-comment {
+            text-align: left !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            font-weight: 600;
+        }
+        .exploit-chain-box {
+            border: 1px solid #000000;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .exploit-chain-arrow {
+            font-size: 2rem;
+            color: #A0AEC0;
+            margin: 0.5rem 0;
+        }
+        .disassembly-line {
+            display: flex;
+            align-items: center;
+        }
+        .disassembly-line .annotation {
+            margin-left: 2rem;
+            color: #A0AEC0;
+            font-style: italic;
+            font-family: 'Aptos', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        }
+        .object-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+        .object-box {
+            border: 1px solid #666;
+            background-color: #2D2D2D;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .object-field {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #444;
+            padding: 0.25rem 0;
+        }
+        .object-field:last-child {
+            border-bottom: none;
+        }
+        .offset {
+            color: #A0AEC0;
+            margin-right: 1rem;
+        }
+        .pointer-arrow {
+            font-size: 1.5rem;
+            color: #A0AEC0;
+        }
+        .timeline {
+            position: relative;
+            max-width: 36rem;
+            margin: 0 auto;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 4rem;
+            padding-bottom: 2rem;
+            border-left: 2px solid #4A5568;
+        }
+        .timeline-item:last-child {
+            border-left-color: transparent;
+        }
+        .code-block .comment-red {
+            color: #F56565;
+            background-color: rgba(245, 101, 101, 0.1);
+        }
+        .code-block .comment-yellow {
+            color: #F6E05E;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -0.8rem;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background-color: #000000;
+            border: 2px solid #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-year {
+            position: absolute;
+            left: -5rem;
+            top: 0.1rem;
+            width: 4rem;
+            text-align: right;
+            font-weight: bold;
+            color: #A0AEC0;
+        }
+        /* Line numbers styling */
+        pre.line-numbers {
+            position: relative;
+            padding-left: 3.8em;
+            counter-reset: linenumber;
+        }
+        pre.line-numbers > code {
+            position: relative;
+            white-space: inherit;
+        }
+        .line-numbers .line-numbers-rows {
+            position: absolute;
+            pointer-events: none;
+            top: 0;
+            font-size: 100%;
+            left: -3.8em;
+            width: 3em;
+            letter-spacing: -1px;
+            border-right: 1px solid #999;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .line-numbers-rows > span {
+            display: block;
+            counter-increment: linenumber;
+        }
+        .line-numbers-rows > span:before {
+            content: counter(linenumber);
+            color: #999;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+        }
+        /* Custom line highlighting that works in PDFs */
+        .line-numbers-rows > span[data-highlighted="true"]:before {
+            color: #F6E05E;
+            font-weight: bold !important;
+        }
+        /* Remove all background-based highlighting */
+        .line-highlight {
+            background: transparent !important;
+            background: none !important;
+        }
+        /* Override all Tailwind responsive classes to be fixed */
         @media (max-width: 9999px) {
-            .md\:grid-cols-2 { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
-            .md\:grid-cols-3 { grid-template-columns: repeat(3,minmax(0,1fr)) !important; }
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
             .md\:mb-24 { margin-bottom: 6rem !important; }
             .md\:text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
             .md\:text-6xl { font-size: 3.75rem !important; line-height: 1 !important; }
@@ -104,7 +297,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 <body class="antialiased">
     <div class="container mx-auto px-4 py-16">
-        <!-- Original content continues unchanged below -->
-    </div>
-</body>
-</html>
+        <header class="text-center mb-24">
+            <h1 class="text-6xl tracking-tight leading-tight text-white">Bypassing Intel CET Shadow Stack</h1>
+            <p class="text-xl text-white-400 mt-4 max-w-3xl mx-auto">An infographic detailing the CVE-2023-3598 "SwiftZero" Chrome sandbox escape which bypasses Intel CET Shadow Stack on Windows [...]
+        </header>
+        <!-- First Section CET Shadow Stack Example -->
+        <section id="fortress" class="mb-24">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">Intel CET ShadowStack</h2>
+            <div class="grid grid-cols-2 gap-8 items-center">
+                <div class="stat-card">
+                    <h3 class="font-bold text-xl mb-3 text-white">A Hardware Defense</h3>
+                    <p class="text-white-300">Intel's Control-flow Enforcement Technology (CET) is a hardware-level defense. Its key feature for this talk is the <span class="font-bold">Shadow St[...]
