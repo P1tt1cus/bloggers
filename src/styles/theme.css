@@ -1,12 +1,5 @@
-:root {
-  --nvim-bg: #000000;
-  --nvim-fg: #ffffff;
-  --nvim-green: #ffffff;
-  --nvim-blue: #cccccc;
-  --nvim-gray: #666666;
-  --nvim-dark: #111111;
-  --nvim-statusline: #1a1a1a;
-}
+/* Legacy nvim styles. The --nvim-* variables now alias the ghost tokens in
+   tokens.css; this whole file is deleted when the chrome rebuild lands. */
 
 /* Post Content Styles */
 #post-content {
