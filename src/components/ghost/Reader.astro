@@ -1,0 +1,78 @@
+---
+// The read_post tool-call panel (spec §05/§06). On the index it starts
+// hidden and is populated from a <template> by reader.ts; on standalone
+// post pages it renders open with server-filled content.
+import Panel from './Panel.astro';
+import Divider from './Divider.astro';
+
+interface Props {
+    open?: boolean;
+    title?: string;
+    meta?: string;
+    cap?: string;
+}
+
+const { open = false, title = '', meta = '', cap = '' } = Astro.props;
+---
+
+<section class="ghost-reader" data-ghost-reader hidden={!open} tabindex="-1">
+    <Panel variant="round" caption="◈ read_post">
+        <dl class="reader-meta">
+            <div class="row">
+                <dt>title</dt>
+                <dd data-ghost-reader-title>{title}</dd>
+            </div>
+            <div class="row">
+                <dt>date</dt>
+                <dd data-ghost-reader-meta>{meta}</dd>
+            </div>
+        </dl>
+        <Divider variant="dots" />
+        <div class="prose" data-ghost-reader-body><slot /></div>
+        <span slot="status" data-ghost-reader-cap>{cap}</span>
+    </Panel>
+    <Divider variant="sigil" />
+    <p class="reader-hint"><slot name="hint">esc back to stream · j/k scroll</slot></p>
+</section>
+
+<style>
+    .ghost-reader {
+        outline: none;
+        padding: 1.5rem 0;
+    }
+
+    .reader-meta {
+        margin: 0.25rem 0 0;
+    }
+
+    .reader-meta .row {
+        display: flex;
+        gap: 2ch;
+    }
+
+    .reader-meta dt {
+        color: var(--ghost-dim);
+        width: 6ch;
+        flex: none;
+    }
+
+    .reader-meta dd {
+        color: var(--ghost-bright);
+        margin: 0;
+    }
+
+    .reader-meta dd[data-ghost-reader-meta] {
+        color: var(--ghost-fg);
+    }
+
+    .reader-hint {
+        text-align: center;
+        color: var(--ghost-dim);
+        font-size: 0.85rem;
+    }
+
+    .reader-hint :global(a) {
+        color: var(--ghost-accent);
+        text-decoration: none;
+    }
+</style>

@@ -1,0 +1,146 @@
+---
+// grep overlay (replaces the :%s/ modal). Context-aware: filters the stream
+// in stream mode, marks matches in the prose in reading mode.
+import Panel from './Panel.astro';
+import Spinner from './Spinner.astro';
+---
+
+<div class="ghost-overlay" data-ghost-overlay="search" hidden>
+    <div class="backdrop" data-ghost-overlay-close></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-label="Search">
+        <Panel variant="round" caption="◈ grep" status="tab cycle · ⏎ jump · esc close">
+            <label class="input-row">
+                <span class="sigil" aria-hidden="true">⌁</span>
+                <input
+                    type="text"
+                    data-ghost-search-input
+                    placeholder="pattern"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                />
+            </label>
+            <p class="drift-row" aria-hidden="true">
+                <Spinner name="drift" /><span class="drift-label" data-ghost-search-label>searching transmissions…</span>
+            </p>
+            <p class="status-row" data-ghost-search-status role="status"></p>
+            <ul class="results" data-ghost-search-results></ul>
+        </Panel>
+    </div>
+</div>
+
+<style>
+    .ghost-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 18vh;
+    }
+
+    .ghost-overlay[hidden] {
+        display: none;
+    }
+
+    .backdrop {
+        position: absolute;
+        inset: 0;
+        background: var(--ghost-overlay);
+    }
+
+    .overlay-panel {
+        position: relative;
+        width: min(38rem, calc(100vw - 2rem));
+        background: var(--ghost-bg);
+    }
+
+    .input-row {
+        display: flex;
+        align-items: center;
+        gap: 1.25ch;
+    }
+
+    .sigil {
+        color: var(--ghost-accent);
+    }
+
+    input {
+        flex: 1;
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--ghost-bright);
+        font-family: var(--ghost-font);
+        font-size: 1rem;
+        caret-color: var(--ghost-accent);
+    }
+
+    input::placeholder {
+        color: var(--ghost-dim);
+    }
+
+    .drift-row {
+        margin: 0.5rem 0 0;
+        white-space: pre;
+        visibility: hidden;
+    }
+
+    .drift-row.active {
+        visibility: visible;
+    }
+
+    .drift-label {
+        color: var(--ghost-dim);
+        margin-left: 1ch;
+    }
+
+    .status-row {
+        margin: 0.5rem 0 0;
+        color: var(--ghost-dim);
+        border-top: 1px solid var(--ghost-faint);
+        padding-top: 0.5rem;
+    }
+
+    .status-row:empty {
+        display: none;
+    }
+
+    .results {
+        list-style: none;
+        margin: 0.25rem 0 0;
+        padding: 0;
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    .results :global(li) {
+        padding: 0.25rem 0.5ch;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--ghost-fg);
+    }
+
+    .results :global(li .r-date),
+    .results :global(li .r-kind),
+    .results :global(li .r-ctx) {
+        color: var(--ghost-dim);
+    }
+
+    .results :global(li .r-glyph) {
+        color: var(--ghost-accent);
+    }
+
+    .results :global(li mark) {
+        background: var(--ghost-selection);
+        color: var(--ghost-bright);
+    }
+
+    .results :global(li.active) {
+        background: var(--ghost-chrome);
+        outline: 1px solid var(--ghost-accent-dim);
+    }
+</style>

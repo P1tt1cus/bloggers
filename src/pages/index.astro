@@ -1,11 +1,17 @@
 ---
-import BlogContainer from '../components/BlogContainer.astro';
-import Layout from '../layouts/Layout.astro';
+import Session from '../layouts/Session.astro';
+import Banner from '../components/ghost/Banner.astro';
+import Stream from '../components/ghost/Stream.astro';
+import Reader from '../components/ghost/Reader.astro';
 import { getTransmissions } from '../lib/transmissions';
 
 const transmissions = await getTransmissions();
 ---
 
-<Layout title="Pitticus's Blog">
-    <BlogContainer transmissions={transmissions} />
-</Layout>
+<Session title="PITTICUS — terminal blog" mode="stream" count={transmissions.length}>
+    <div data-ghost-stream-region>
+        <Banner count={transmissions.length} />
+        <Stream transmissions={transmissions} />
+    </div>
+    <Reader />
+</Session>

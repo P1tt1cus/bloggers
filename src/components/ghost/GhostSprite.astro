@@ -1,0 +1,49 @@
+---
+// The spec's block-art ghost, verbatim.
+interface Props {
+    tone?: 'accent' | 'dim';
+    caption?: boolean;
+}
+
+const { tone = 'accent', caption = false } = Astro.props;
+
+const SPRITE = `  ▄██████▄
+ ██████████
+▐██  ██  ██▌
+▐██████████▌
+▐██████████▌
+ ▀█▀▀██▀▀█▀`;
+---
+
+<figure class:list={['ghost-sprite', `tone-${tone}`]}>
+    <pre aria-hidden="true">{SPRITE}</pre>
+    {caption && <figcaption>THE GHOST</figcaption>}
+</figure>
+
+<style>
+    .ghost-sprite {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    pre {
+        font-family: var(--ghost-font);
+        line-height: 1.05;
+    }
+
+    .tone-accent pre {
+        color: var(--ghost-accent);
+    }
+
+    .tone-dim pre {
+        color: var(--ghost-dim);
+    }
+
+    figcaption {
+        color: var(--ghost-dim);
+        font-size: 0.7rem;
+        letter-spacing: 0.35em;
+    }
+</style>

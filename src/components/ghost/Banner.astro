@@ -1,0 +1,119 @@
+---
+// Index hero (spec §01, large banner). Markup is fully visible by default —
+// the motion layer opts IN to a boot reveal; a JS failure can never blank it.
+import GhostSprite from './GhostSprite.astro';
+
+interface Props {
+    count: number;
+}
+
+const { count } = Astro.props;
+
+const LOGO = `██████╗  ██╗ ████████╗ ████████╗ ██╗  ██████╗ ██╗   ██╗ ███████╗
+██╔══██╗ ██║ ╚══██╔══╝ ╚══██╔══╝ ██║ ██╔════╝ ██║   ██║ ██╔════╝
+██████╔╝ ██║    ██║       ██║    ██║ ██║      ██║   ██║ ███████╗
+██╔═══╝  ██║    ██║       ██║    ██║ ██║      ██║   ██║ ╚════██║
+██║      ██║    ██║       ██║    ██║ ╚██████╗ ╚██████╔╝ ███████║
+╚═╝      ╚═╝    ╚═╝       ╚═╝    ╚═╝  ╚═════╝  ╚═════╝  ╚══════╝`;
+
+// Two-tone ANSI shadow: blocks lit, box-drawing shadow chars faint.
+const logoHtml = LOGO.split('\n')
+    .map((line) =>
+        line.replace(/(█+)|([╔╗╚╝═║]+)/g, (m, blocks) =>
+            blocks ? `<span class="lit">${m}</span>` : `<span class="shade">${m}</span>`,
+        ),
+    )
+    .join('\n');
+---
+
+<header class="ghost-banner" data-ghost-banner>
+    <h1 class="visually-hidden">Pitticus — terminal blog</h1>
+    <div class="banner-art">
+        <pre class="logo" aria-hidden="true" data-ghost-boot-line set:html={logoHtml} />
+        <GhostSprite caption />
+    </div>
+    <div class="boot">
+        <p data-ghost-boot-line>pitticus v2.0.0 — haunted terminal blog</p>
+        <p data-ghost-boot-line>ghost-mode enabled · {count} transmissions</p>
+        <p class="boot-rule" data-ghost-boot-line aria-hidden="true">──────────────────────────────</p>
+        <p data-ghost-boot-line>select a transmission, or press <kbd>?</kbd> for help</p>
+    </div>
+    <p class="sigil-line" data-ghost-boot-line>
+        <span class="sigil" aria-hidden="true">⌁</span> awaiting selection <span data-ghost-cursor></span>
+    </p>
+    <p class="scan-line" data-ghost-boot-line>
+        <span class="scan-result" data-ghost-boot-status><span class="ok" aria-hidden="true">✓</span> {count} transmissions · 8ms</span>
+    </p>
+</header>
+
+<style>
+    .ghost-banner {
+        padding: 2.5rem 0 0.5rem;
+    }
+
+    .banner-art {
+        display: flex;
+        align-items: flex-end;
+        gap: 3rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.75rem;
+    }
+
+    .logo {
+        font-family: var(--ghost-font);
+        font-size: clamp(7px, 1.4vw, 13px);
+        line-height: 1.2;
+        color: var(--ghost-fg);
+    }
+
+    .logo :global(.lit) {
+        color: var(--ghost-fg);
+    }
+
+    .logo :global(.shade) {
+        color: var(--ghost-faint);
+    }
+
+    .boot p {
+        color: var(--ghost-dim);
+        margin: 0.1rem 0;
+    }
+
+    .boot kbd {
+        font-family: var(--ghost-font);
+        color: var(--ghost-accent);
+    }
+
+    .boot-rule {
+        color: var(--ghost-faint);
+    }
+
+    .sigil-line {
+        margin-top: 1.25rem;
+        color: var(--ghost-fg);
+    }
+
+    .sigil {
+        color: var(--ghost-accent);
+    }
+
+    .scan-line {
+        margin-top: 0.25rem;
+        color: var(--ghost-dim);
+        min-height: 1.6em;
+    }
+
+    .scan-line .ok {
+        color: var(--ghost-ok);
+    }
+
+    @media (max-width: 640px) {
+        .banner-art {
+            display: none;
+        }
+
+        .ghost-banner {
+            padding-top: 1.25rem;
+        }
+    }
+</style>

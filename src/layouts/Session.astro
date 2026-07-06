@@ -1,0 +1,74 @@
+---
+// Terminal-window chrome shared by every session page (spec §06): caption,
+// compact header, status footer, overlays, scanlines, and the client entry.
+import Base from './Base.astro';
+import SessionHeader from '../components/ghost/SessionHeader.astro';
+import StatusBar from '../components/ghost/StatusBar.astro';
+import Keymap from '../components/ghost/Keymap.astro';
+import SearchOverlay from '../components/ghost/SearchOverlay.astro';
+
+interface Props {
+    title: string;
+    description?: string;
+    mode?: 'stream' | 'reading';
+    count?: number;
+    context?: string;
+}
+
+const { title, description, mode = 'stream', count, context } = Astro.props;
+---
+
+<Base title={title} description={description} mode={mode}>
+    <div class="ghost-session">
+        <p class="window-caption" aria-hidden="true">pitticus — ~/ghost/blog — 80×∞</p>
+        <div class="ghost-frame">
+            <SessionHeader count={count} context={context} />
+            <main class="session-main">
+                <slot />
+            </main>
+            <StatusBar mode={mode} total={count} context={context} />
+        </div>
+    </div>
+    <Keymap />
+    <SearchOverlay />
+    <div class="scanlines" aria-hidden="true"></div>
+</Base>
+
+<script>
+    import '../scripts/app';
+</script>
+
+<style>
+    .ghost-session {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0.75rem 1rem 0;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .window-caption {
+        color: var(--ghost-dim);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.25rem 0.35rem;
+    }
+
+    .ghost-frame {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--ghost-faint);
+        background: var(--ghost-bg);
+    }
+
+    .session-main {
+        flex: 1;
+        padding: 0 1.25rem 2rem;
+    }
+
+    /* Reading mode replaces the stream region with the reader panel. */
+    :global(body[data-ghost-mode='reading'] [data-ghost-stream-region]) {
+        display: none;
+    }
+</style>
