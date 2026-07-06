@@ -28,7 +28,17 @@ const { open = false, title = '', meta = '', cap = '' } = Astro.props;
             </div>
         </dl>
         <Divider variant="dots" />
-        <div class="prose" data-ghost-reader-body><slot /></div>
+        <div class="prose" data-ghost-reader-body>
+            <slot />
+            {
+                open && (
+                    <p class="stream-tail" aria-hidden="true">
+                        <span data-ghost-spinner="streamdots">…</span>
+                        <span data-ghost-cursor />
+                    </p>
+                )
+            }
+        </div>
         <span slot="status" data-ghost-reader-cap>{cap}</span>
     </Panel>
     <Divider variant="sigil" />

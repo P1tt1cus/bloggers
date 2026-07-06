@@ -91,6 +91,13 @@ a {
       rgba(0, 0, 0, 0.14) 2px 3px
     );
     opacity: 0.5;
+    animation: ghost-scan-roll 9s linear infinite;
+  }
+
+  @keyframes ghost-scan-roll {
+    to {
+      background-position: 0 3px;
+    }
   }
 }
 

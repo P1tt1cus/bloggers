@@ -40,7 +40,7 @@ export function openReader(slug: string): void {
   if (!template || !readerEl || !bodyEl) return;
 
   savedScrollY = window.scrollY;
-  bodyEl.replaceChildren(template.content.cloneNode(true));
+  bodyEl.replaceChildren(template.content.cloneNode(true), buildStreamTail());
   if (titleEl) titleEl.textContent = entry?.dataset.title ?? slug;
   if (metaEl) metaEl.textContent = `${entry?.dataset.date ?? ''} · ${template.dataset.minutes} min read`;
   if (capEl) capEl.textContent = `✓ ${template.dataset.words} words · rendered in ghost-mode`;
@@ -73,6 +73,20 @@ export function closeReader(opts: { fromHistory?: boolean } = {}): void {
 
   onCloseToStream?.();
   flashStatus('†', 'killed read_post · back to stream');
+}
+
+/** `…▊` streaming tail after the last content block (spec §02/§06). */
+function buildStreamTail(): HTMLElement {
+  const tail = document.createElement('p');
+  tail.className = 'stream-tail';
+  tail.setAttribute('aria-hidden', 'true');
+  const dots = document.createElement('span');
+  dots.dataset.ghostSpinner = 'streamdots';
+  dots.textContent = '…';
+  const cursor = document.createElement('span');
+  cursor.setAttribute('data-ghost-cursor', '');
+  tail.append(dots, cursor);
+  return tail;
 }
 
 /** Scroll the document by two prose lines (derived — no pixel grid). */

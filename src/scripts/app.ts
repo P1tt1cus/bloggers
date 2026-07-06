@@ -20,6 +20,7 @@ import { initStream, backToStream } from './stream';
 import { initReader } from './reader';
 import { initSearch } from './search';
 import { initKeys } from './keys';
+import { initMotion } from './motion';
 
 /** Home href, resolved from the footer brand link (base-path aware). */
 export function withHome(): string {
@@ -34,6 +35,7 @@ function init(): void {
   initReader(backToStream);
   initSearch();
   initKeys();
+  initMotion();
 }
 
 if (document.readyState === 'loading') {
