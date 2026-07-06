@@ -1,7 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogLayout from '../../layouts/BlogLayout.astro';
+import Session from '../../layouts/Session.astro';
+import Reader from '../../components/ghost/Reader.astro';
 import { formatDate } from '../../lib/transmissions';
+import { withBase } from '../../lib/url';
 
 export async function getStaticPaths() {
     const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -10,8 +12,38 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
+
+const words = entry.body.split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 200));
 ---
 
-<BlogLayout title={entry.data.title} date={formatDate(entry.data.date)} slug={entry.slug}>
-    <Content />
-</BlogLayout>
+<Session
+    title={`${entry.data.title} · PITTICUS`}
+    description={entry.data.description}
+    mode="reading"
+    context={`reading ${entry.slug}`}
+>
+    <p class="session-line">
+        <span class="sigil" aria-hidden="true">⌁</span> read_post {entry.slug} --standalone
+    </p>
+    <Reader
+        open
+        title={entry.data.title}
+        meta={`${formatDate(entry.data.date)} · ${minutes} min read`}
+        cap={`✓ ${words} words · rendered in ghost-mode`}
+    >
+        <Content />
+        <span slot="hint"><a href={withBase('/')}>⌁ return to stream</a> · esc · j/k scroll</span>
+    </Reader>
+</Session>
+
+<style>
+    .session-line {
+        margin: 1.5rem 0 0;
+        color: var(--ghost-fg);
+    }
+
+    .sigil {
+        color: var(--ghost-accent);
+    }
+</style>

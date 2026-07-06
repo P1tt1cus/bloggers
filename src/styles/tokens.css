@@ -45,16 +45,3 @@
   --astro-code-token-punctuation: #5a6170;
   --astro-code-token-link: var(--ghost-accent);
 }
-
-/* MIGRATION ALIASES — legacy nvim components re-palette through these.
-   Added in the token-repaint increment; deleted once no --nvim-* consumer
-   remains. */
-:root {
-  --nvim-bg: var(--ghost-bg);
-  --nvim-fg: var(--ghost-fg);
-  --nvim-green: var(--ghost-accent);
-  --nvim-blue: var(--ghost-bright);
-  --nvim-gray: var(--ghost-dim);
-  --nvim-dark: var(--ghost-surface);
-  --nvim-statusline: var(--ghost-chrome);
-}
