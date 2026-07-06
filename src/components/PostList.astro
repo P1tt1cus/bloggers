@@ -1,11 +1,18 @@
 ---
 import BlogPost from './BlogPost.astro';
+import { formatDate } from '../lib/transmissions';
+import type { Transmission, PostTransmission } from '../lib/transmissions';
 
 interface Props {
-    posts: any[];
+    transmissions: Transmission[];
 }
 
-const { posts } = Astro.props;
+const { transmissions } = Astro.props;
+
+const posts = transmissions.filter((t): t is PostTransmission => t.kind === 'post');
+const rendered = await Promise.all(
+    posts.map(async (t) => ({ slug: t.slug, Content: (await t.entry.render()).Content })),
+);
 ---
 
 <div id="post-list">
@@ -17,17 +24,20 @@ const { posts } = Astro.props;
         <h1 class="vim-header"># Pitticus's Blog</h1>
     </header>
     <section class="posts">
-        {posts.map(post => (
+        {transmissions.map(t => (
             <BlogPost
-                title={post.frontmatter.title}
-                date={post.frontmatter.date}
-                slug={post.frontmatter.slug}
-                description={post.frontmatter.description}
-                content={post.compiledContent()}
-                isExternal={post.isExternal}
+                title={t.title}
+                date={formatDate(t.date)}
+                slug={t.slug}
+                description={t.description}
+                isExternal={t.kind === 'artifact'}
+                href={t.href}
             />
         ))}
     </section>
+    {rendered.map(({ slug, Content }) => (
+        <template id={`tpl-${slug}`}><Content /></template>
+    ))}
 </div>
 
 <style>

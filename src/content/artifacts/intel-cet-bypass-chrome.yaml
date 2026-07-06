@@ -1,0 +1,4 @@
+title: "Bypassing Intel CET Shadow Stack"
+date: 2025-07-11
+description: "Interactive infographic on bypassing Intel CET shadow-stack protections in Chrome"
+file: intel-cet-bypass-chrome.html

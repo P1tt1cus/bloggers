@@ -4,23 +4,21 @@ interface Props {
     date: string;
     slug: string;
     description: string;
-    content?: string;
     isExternal?: boolean;
+    href: string;
 }
 
-const { title, date, slug, description, content, isExternal } = Astro.props;
-const linkUrl = isExternal ? `/bloggers/blog/${slug}.html` : `/bloggers/blog/${slug}`;
+const { title, date, slug, description, isExternal, href } = Astro.props;
 const externalString = isExternal ? 'true' : 'false';
 ---
 
-<article 
-    class="blog-post" 
+<article
+    class="blog-post"
     data-title={title}
     data-date={date}
-    data-content={content}
     data-slug={slug}
     data-external={externalString}
-    data-link-url={linkUrl}
+    data-link-url={href}
 >
     <div class="post-header">
         <span class="line-start">~</span>

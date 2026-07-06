@@ -41,23 +41,21 @@ function setupPostNavigation() {
     post.addEventListener('click', () => {
       const isExternal = post.getAttribute('data-external') === 'true';
       const linkUrl = post.getAttribute('data-link-url');
-      
-      console.log('Post clicked:', { isExternal, linkUrl }); // Debug logging
-      
+
       if (isExternal && linkUrl) {
         // Open HTML files in a new tab
-        console.log('Opening external link:', linkUrl); // Debug logging
         window.open(linkUrl, '_blank');
       } else {
-        const content = post.getAttribute('data-content');
-        
-        console.log('Processing internal content:', content); // Debug logging
-        
-        if (content && content.trim() !== '') {
+        const slug = post.getAttribute('data-slug');
+        const template = slug
+          ? (document.getElementById(`tpl-${slug}`) as HTMLTemplateElement | null)
+          : null;
+
+        if (template && postContent) {
           postList?.classList.add('hidden');
-          postContent?.classList.remove('hidden');
-          postContent.innerHTML = content;
-          
+          postContent.classList.remove('hidden');
+          postContent.replaceChildren(template.content.cloneNode(true));
+
           // Trigger line numbers update
           document.dispatchEvent(new Event('contentchange'));
         }

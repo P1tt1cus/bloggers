@@ -6,11 +6,13 @@ import PostContent from './PostContent.astro';
 import WhichKey from './WhichKey.astro';
 import Search from './Search.astro';
 
+import type { Transmission } from '../lib/transmissions';
+
 interface Props {
-    posts: any[];
+    transmissions: Transmission[];
 }
 
-const { posts } = Astro.props;
+const { transmissions } = Astro.props;
 ---
 
 <div class="nvim-container">
@@ -20,7 +22,7 @@ const { posts } = Astro.props;
             <div class="line-numbers" id="line-numbers"></div>
         </div>
         <div class="content">
-            <PostList posts={posts} />
+            <PostList transmissions={transmissions} />
             <PostContent />
         </div>
     </main>
