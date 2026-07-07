@@ -29,6 +29,38 @@ const SPRITE = `  ▄██████▄
     pre {
         font-family: var(--ghost-font);
         line-height: 1.05;
+        /* gentle hover + faint flicker; frozen under prefers-reduced-motion
+           by the global kill-switch in base.css */
+        animation:
+            sprite-float 3.8s ease-in-out infinite,
+            sprite-flicker 6.5s ease-in-out infinite;
+        will-change: transform, opacity;
+    }
+
+    @keyframes sprite-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-7px);
+        }
+    }
+
+    @keyframes sprite-flicker {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        47% {
+            opacity: 0.92;
+        }
+        50% {
+            opacity: 0.68;
+        }
+        53% {
+            opacity: 0.92;
+        }
     }
 
     .tone-accent pre {
