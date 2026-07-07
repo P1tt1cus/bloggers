@@ -94,7 +94,7 @@ function renderOpen(slug: string): void {
   bodyEl.replaceChildren(template.content.cloneNode(true), buildStreamTail());
   if (titleEl) titleEl.textContent = entry?.dataset.title ?? slug;
   if (metaEl) metaEl.textContent = `${entry?.dataset.date ?? ''} · ${template.dataset.minutes} min read`;
-  if (capEl) capEl.textContent = `✓ ${template.dataset.words} words · rendered in ghost-mode`;
+  if (capEl) capEl.textContent = `✓ ${template.dataset.words} words`;
 
   document.body.dataset.ghostMode = 'reading';
   readerEl.hidden = false;

@@ -12,7 +12,7 @@ let meterEl: HTMLElement | null;
 let hintEl: HTMLElement | null;
 
 let restingGlyph = '⌁';
-let restingContext = 'ghost-mode';
+let restingContext = 'online';
 let flashTimer: number | undefined;
 let rafPending = false;
 
@@ -23,7 +23,7 @@ export function initStatus(): void {
   hintEl = document.querySelector('[data-ghost-status-hint]');
 
   restingGlyph = glyphEl?.textContent ?? '⌁';
-  restingContext = contextEl?.textContent ?? 'ghost-mode';
+  restingContext = contextEl?.textContent ?? 'online';
 
   window.addEventListener(
     'scroll',
@@ -64,7 +64,7 @@ export function enterReading(slug: string): void {
 
 export function enterStream(selected: number, total: number): void {
   restingGlyph = '⌁';
-  restingContext = 'ghost-mode';
+  restingContext = 'online';
   if (glyphEl) glyphEl.textContent = restingGlyph;
   if (contextEl) contextEl.textContent = restingContext;
   if (hintEl) hintEl.textContent = '▲▼ j/k · ⏎ open · ? keys';

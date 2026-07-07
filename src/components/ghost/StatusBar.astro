@@ -12,7 +12,7 @@ interface Props {
 const { mode = 'stream', total = 0, context } = Astro.props;
 
 const initialGlyph = mode === 'reading' ? '◍' : '⌁';
-const initialContext = context ?? (mode === 'reading' ? 'reading' : 'ghost-mode');
+const initialContext = context ?? (mode === 'reading' ? 'reading' : 'online');
 const initialMeter = mode === 'reading' ? 'ctx ░░░░░░░░ 0%' : `${'◌'.repeat(Math.min(total, 8))} –/${total}`;
 const initialHint = mode === 'reading' ? 'esc back' : '▲▼ j/k · ⏎ open · ? keys';
 ---

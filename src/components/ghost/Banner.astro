@@ -8,33 +8,16 @@ interface Props {
 }
 
 const { count } = Astro.props;
-
-const LOGO = `██████╗  ██╗ ████████╗ ████████╗ ██╗  ██████╗ ██╗   ██╗ ███████╗
-██╔══██╗ ██║ ╚══██╔══╝ ╚══██╔══╝ ██║ ██╔════╝ ██║   ██║ ██╔════╝
-██████╔╝ ██║    ██║       ██║    ██║ ██║      ██║   ██║ ███████╗
-██╔═══╝  ██║    ██║       ██║    ██║ ██║      ██║   ██║ ╚════██║
-██║      ██║    ██║       ██║    ██║ ╚██████╗ ╚██████╔╝ ███████║
-╚═╝      ╚═╝    ╚═╝       ╚═╝    ╚═╝  ╚═════╝  ╚═════╝  ╚══════╝`;
-
-// Two-tone ANSI shadow: blocks lit, box-drawing shadow chars faint.
-const logoHtml = LOGO.split('\n')
-    .map((line) =>
-        line.replace(/(█+)|([╔╗╚╝═║]+)/g, (m, blocks) =>
-            blocks ? `<span class="lit">${m}</span>` : `<span class="shade">${m}</span>`,
-        ),
-    )
-    .join('\n');
 ---
 
 <header class="ghost-banner" data-ghost-banner>
     <h1 class="visually-hidden">Pitticus — terminal blog</h1>
     <div class="banner-art">
-        <pre class="logo" aria-hidden="true" data-ghost-boot-line set:html={logoHtml} />
-        <GhostSprite caption />
+        <GhostSprite />
     </div>
     <div class="boot">
-        <p data-ghost-boot-line>pitticus v2.0.0 — haunted terminal blog</p>
-        <p data-ghost-boot-line>ghost-mode enabled · {count} transmissions</p>
+        <p data-ghost-boot-line>pitticus v2.0.0 — terminal blog</p>
+        <p data-ghost-boot-line>online · {count} transmissions</p>
         <p class="boot-rule" data-ghost-boot-line aria-hidden="true">──────────────────────────────</p>
         <p data-ghost-boot-line>select a transmission, or press <kbd>?</kbd> for help</p>
     </div>
@@ -54,24 +37,7 @@ const logoHtml = LOGO.split('\n')
     .banner-art {
         display: flex;
         align-items: flex-end;
-        gap: 3rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.75rem;
-    }
-
-    .logo {
-        font-family: var(--ghost-font);
-        font-size: clamp(7px, 1.4vw, 13px);
-        line-height: 1.2;
-        color: var(--ghost-fg);
-    }
-
-    .logo :global(.lit) {
-        color: var(--ghost-fg);
-    }
-
-    .logo :global(.shade) {
-        color: var(--ghost-faint);
+        margin-bottom: 1.5rem;
     }
 
     .boot p {

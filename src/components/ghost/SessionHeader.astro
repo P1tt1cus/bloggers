@@ -17,7 +17,7 @@ const { count, context } = Astro.props;
         <span class="bookend" aria-hidden="true">░▒▓▌</span>
     </a>
     <span class="meta">
-        terminal blog · ghost-mode{count !== undefined && <span class="wide"> · {count} transmissions</span>}{
+        terminal blog{count !== undefined && <span class="wide"> · {count} transmissions</span>}{
             context && <span> · {context}</span>
         }
     </span>

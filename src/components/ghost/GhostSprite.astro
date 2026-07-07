@@ -1,11 +1,10 @@
 ---
-// The spec's block-art ghost, verbatim.
+// The spec's block-art sprite logo, verbatim.
 interface Props {
     tone?: 'accent' | 'dim';
-    caption?: boolean;
 }
 
-const { tone = 'accent', caption = false } = Astro.props;
+const { tone = 'accent' } = Astro.props;
 
 const SPRITE = `  ▄██████▄
  ██████████
@@ -17,7 +16,6 @@ const SPRITE = `  ▄██████▄
 
 <figure class:list={['ghost-sprite', `tone-${tone}`]}>
     <pre aria-hidden="true">{SPRITE}</pre>
-    {caption && <figcaption>THE GHOST</figcaption>}
 </figure>
 
 <style>
@@ -39,11 +37,5 @@ const SPRITE = `  ▄██████▄
 
     .tone-dim pre {
         color: var(--ghost-dim);
-    }
-
-    figcaption {
-        color: var(--ghost-dim);
-        font-size: 0.7rem;
-        letter-spacing: 0.35em;
     }
 </style>

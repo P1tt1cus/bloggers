@@ -30,7 +30,7 @@ const minutes = Math.max(1, Math.round(words / 200));
         open
         title={entry.data.title}
         meta={`${formatDate(entry.data.date)} · ${minutes} min read`}
-        cap={`✓ ${words} words · rendered in ghost-mode`}
+        cap={`✓ ${words} words`}
     >
         <Content />
         <span slot="hint"><a href={withBase('/')}>⌁ return to stream</a> · esc · j/k scroll</span>
