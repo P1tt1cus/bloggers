@@ -1,0 +1,100 @@
+---
+// Sticky session footer (spec §06). Server renders the segments for the
+// page's initial mode; client JS rewrites text content on mode changes.
+import { withBase } from '../../lib/url';
+
+interface Props {
+    mode?: 'stream' | 'reading';
+    total?: number;
+    context?: string;
+}
+
+const { mode = 'stream', total = 0, context } = Astro.props;
+
+const initialGlyph = mode === 'reading' ? '◍' : '⌁';
+const initialContext = context ?? (mode === 'reading' ? 'reading' : 'ghost-mode');
+const initialMeter = mode === 'reading' ? 'ctx ░░░░░░░░ 0%' : `${'◌'.repeat(Math.min(total, 8))} –/${total}`;
+const initialHint = mode === 'reading' ? 'esc back' : '▲▼ j/k · ⏎ open · ? keys';
+---
+
+<footer class="ghost-statusbar" data-ghost-status>
+    <span class="seg seg-state">
+        <span class="glyph" data-ghost-status-glyph aria-hidden="true">{initialGlyph}</span>
+        <a class="brand" href={withBase('/')}>PITTICUS</a>
+    </span>
+    <span class="sep" aria-hidden="true">│</span>
+    <span class="seg seg-context" data-ghost-status-context aria-live="polite">{initialContext}</span>
+    <span class="sep" aria-hidden="true">│</span>
+    <span
+        class="seg seg-meter"
+        data-ghost-status-meter
+        role={mode === 'reading' ? 'progressbar' : undefined}
+        aria-label={mode === 'reading' ? 'reading progress' : undefined}
+        aria-hidden={mode === 'reading' ? undefined : 'true'}
+        aria-valuemin={mode === 'reading' ? 0 : undefined}
+        aria-valuemax={mode === 'reading' ? 100 : undefined}
+        aria-valuenow={mode === 'reading' ? 0 : undefined}>{initialMeter}</span>
+    <span class="sep sep-hint" aria-hidden="true">│</span>
+    <span class="seg seg-hint" data-ghost-status-hint>{initialHint}</span>
+</footer>
+
+<style>
+    .ghost-statusbar {
+        position: sticky;
+        bottom: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        gap: 1.25ch;
+        padding: 0.35rem 1.25rem;
+        background: var(--ghost-chrome);
+        border-top: 1px solid var(--ghost-faint);
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow: hidden;
+    }
+
+    .glyph {
+        color: var(--ghost-accent);
+        display: inline-block;
+        min-width: 1ch;
+    }
+
+    .brand {
+        color: var(--ghost-bright);
+        font-weight: 600;
+        text-decoration: none;
+        margin-left: 1ch;
+    }
+
+    .sep {
+        color: var(--ghost-faint);
+    }
+
+    .seg-context {
+        color: var(--ghost-dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .seg-meter {
+        color: var(--ghost-dim);
+    }
+
+    .seg-hint {
+        color: var(--ghost-dim);
+        margin-left: auto;
+    }
+
+    @media (max-width: 640px) {
+        .seg-context,
+        .sep,
+        .seg-hint {
+            display: none;
+        }
+
+        .seg-meter {
+            margin-left: auto;
+        }
+    }
+</style>

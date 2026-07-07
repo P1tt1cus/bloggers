@@ -1,0 +1,32 @@
+---
+// Server renders the resolved (static) frame; motion.ts swaps frames on the
+// shared ticker when prefers-reduced-motion allows.
+import { SPINNERS, type SpinnerName } from '../../lib/ghost';
+
+interface Props {
+    name: SpinnerName;
+    label?: string;
+}
+
+const { name, label } = Astro.props;
+---
+
+<span class="ghost-spinner">
+    <span class="frame" data-ghost-spinner={name} aria-hidden="true">{SPINNERS[name].resolved}</span>
+    {label && <span class="label">{label}</span>}
+</span>
+
+<style>
+    .ghost-spinner {
+        white-space: pre;
+    }
+
+    .frame {
+        color: var(--ghost-accent);
+    }
+
+    .label {
+        color: var(--ghost-dim);
+        margin-left: 1ch;
+    }
+</style>

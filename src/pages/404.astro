@@ -1,0 +1,51 @@
+---
+// The one square failure panel in the whole site (spec §05).
+import Session from '../layouts/Session.astro';
+import Panel from '../components/ghost/Panel.astro';
+import Spinner from '../components/ghost/Spinner.astro';
+import GhostSprite from '../components/ghost/GhostSprite.astro';
+import { withBase } from '../lib/url';
+---
+
+<Session title="✗ not_found · PITTICUS" mode="stream" context="lost">
+    <div class="notfound">
+        <h1 class="visually-hidden">404 — not found</h1>
+        <Panel variant="square" caption="✗ not_found" tone="err" status="exit 404">
+            <p>the ghost searched every corridor</p>
+            <p>nothing lives at this address</p>
+        </Panel>
+        <p class="whisper"><Spinner name="whisper" label="listening for the lost page" /></p>
+        <GhostSprite tone="dim" />
+        <p class="return"><a href={withBase('/')}>⌁ return to stream</a></p>
+    </div>
+</Session>
+
+<style>
+    .notfound {
+        max-width: 30rem;
+        margin: 4rem auto 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.75rem;
+        text-align: center;
+    }
+
+    .notfound :global(.panel-body p) {
+        color: var(--ghost-dim);
+        margin: 0.2rem 0;
+    }
+
+    .whisper {
+        white-space: pre;
+    }
+
+    .return a {
+        color: var(--ghost-accent);
+        text-decoration: none;
+    }
+
+    .return a:hover {
+        text-decoration: underline;
+    }
+</style>

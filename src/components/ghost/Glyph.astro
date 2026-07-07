@@ -1,0 +1,34 @@
+---
+import { GLYPHS, type GlyphName } from '../../lib/ghost';
+
+interface Props {
+    name: GlyphName;
+    tone?: 'accent' | 'ok' | 'err' | 'warn' | 'dim';
+}
+
+const { name, tone = 'accent' } = Astro.props;
+---
+
+<span class:list={['ghost-glyph', `tone-${tone}`]} aria-hidden="true">{GLYPHS[name]}</span>
+
+<style>
+    .tone-accent {
+        color: var(--ghost-accent);
+    }
+
+    .tone-ok {
+        color: var(--ghost-ok);
+    }
+
+    .tone-err {
+        color: var(--ghost-err);
+    }
+
+    .tone-warn {
+        color: var(--ghost-warn);
+    }
+
+    .tone-dim {
+        color: var(--ghost-dim);
+    }
+</style>

@@ -1,0 +1,84 @@
+---
+// Help overlay (replaces WhichKey). Hold Space or press ? — any key dismisses.
+import Panel from './Panel.astro';
+
+const KEYS = [
+    { keys: 'j / k', desc: 'next · prev event' },
+    { keys: '⏎', desc: 'open transmission' },
+    { keys: 'g / G', desc: 'jump head · tail' },
+    { keys: 'esc', desc: 'kill view / close' },
+    { keys: 'space s', desc: '◈ grep (also: /)' },
+    { keys: '?', desc: 'this panel' },
+];
+---
+
+<div class="ghost-overlay" data-ghost-overlay="keymap" hidden>
+    <div class="backdrop" data-ghost-overlay-close></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-label="Keymap" tabindex="-1">
+        <Panel variant="round" caption="⌁ keymap" status="press any key to dismiss">
+            <ul class="keymap-list">
+                {
+                    KEYS.map((k) => (
+                        <li>
+                            <kbd>{k.keys}</kbd>
+                            <span class="desc">{k.desc}</span>
+                        </li>
+                    ))
+                }
+            </ul>
+        </Panel>
+    </div>
+</div>
+
+<style>
+    .ghost-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ghost-overlay[hidden] {
+        display: none;
+    }
+
+    .backdrop {
+        position: absolute;
+        inset: 0;
+        background: var(--ghost-overlay);
+    }
+
+    .overlay-panel {
+        position: relative;
+        width: min(26rem, calc(100vw - 2rem));
+        background: var(--ghost-bg);
+    }
+
+    .keymap-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .keymap-list li {
+        display: flex;
+        align-items: baseline;
+        gap: 2ch;
+        margin: 0.4rem 0;
+    }
+
+    kbd {
+        font-family: var(--ghost-font);
+        color: var(--ghost-accent);
+        background: var(--ghost-surface);
+        padding: 0.05rem 0.6ch;
+        min-width: 9ch;
+        flex: none;
+    }
+
+    .desc {
+        color: var(--ghost-fg);
+    }
+</style>

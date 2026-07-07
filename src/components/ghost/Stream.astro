@@ -1,0 +1,48 @@
+---
+// The post list as an event stream, plus inert <template> post bodies for
+// the in-place reader (Astro 4 collections render Content components, not
+// HTML strings — templates carry the rendered HTML without executing it).
+import Divider from './Divider.astro';
+import StreamEntry from './StreamEntry.astro';
+import type { Transmission, PostTransmission } from '../../lib/transmissions';
+
+interface Props {
+    transmissions: Transmission[];
+}
+
+const { transmissions } = Astro.props;
+
+const posts = transmissions.filter((t): t is PostTransmission => t.kind === 'post');
+const rendered = await Promise.all(
+    posts.map(async (t) => ({
+        slug: t.slug,
+        words: t.words,
+        minutes: t.minutes,
+        Content: (await t.entry.render()).Content,
+    })),
+);
+---
+
+<section class="ghost-stream-section">
+    <Divider variant="section" label="TRANSMISSIONS" />
+    <ol class="ghost-stream" data-ghost-stream>
+        {transmissions.map((t) => <StreamEntry t={t} />)}
+    </ol>
+    <Divider variant="dots" />
+    <Divider variant="heavy" label="end of stream" />
+</section>
+
+{
+    rendered.map(({ slug, words, minutes, Content }) => (
+        <template data-ghost-template={slug} data-words={words} data-minutes={minutes}>
+            <Content />
+        </template>
+    ))
+}
+
+<style>
+    .ghost-stream {
+        margin: 0;
+        padding: 0;
+    }
+</style>

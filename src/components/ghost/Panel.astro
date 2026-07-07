@@ -1,0 +1,95 @@
+---
+// Framed TUI panel. Rounded = normal, square = failure states (spec §05).
+// Caps are box-drawing text + a CSS 1px line-fill so frames stretch to any
+// width without glyph counting; sides are real CSS borders.
+interface Props {
+    variant?: 'round' | 'square';
+    caption?: string;
+    status?: string;
+    tone?: 'accent' | 'ok' | 'err' | 'dim';
+    class?: string;
+}
+
+const { variant = 'round', caption, status, tone = 'accent', class: className } = Astro.props;
+
+const corners =
+    variant === 'round'
+        ? { tl: '╭─┤', tr: '╮', bl: '╰─', br: '╯' }
+        : { tl: '┌─┤', tr: '┐', bl: '└─', br: '┘' };
+---
+
+<section class:list={['ghost-panel', `tone-${tone}`, className]}>
+    <div class="cap">
+        <span class="chars" aria-hidden="true">{corners.tl}</span>
+        <span class="caption"><slot name="caption">{caption}</slot></span>
+        <span class="chars" aria-hidden="true">├</span>
+        <span class="fill" aria-hidden="true"></span>
+        <span class="chars" aria-hidden="true">{corners.tr}</span>
+    </div>
+    <div class="panel-body">
+        <slot />
+    </div>
+    <div class="cap">
+        <span class="chars" aria-hidden="true">{corners.bl}</span>
+        <span class="status"><slot name="status">{status}</slot></span>
+        <span class="fill" aria-hidden="true"></span>
+        <span class="chars" aria-hidden="true">{corners.br}</span>
+    </div>
+</section>
+
+<style>
+    .ghost-panel {
+        width: 100%;
+    }
+
+    .cap {
+        display: flex;
+        align-items: center;
+        white-space: pre;
+        color: var(--ghost-faint);
+        line-height: 1.4;
+    }
+
+    .caption {
+        color: var(--ghost-fg);
+        padding: 0 0.75ch;
+    }
+
+    .tone-accent .caption {
+        color: var(--ghost-accent);
+    }
+
+    .tone-ok .caption {
+        color: var(--ghost-ok);
+    }
+
+    .tone-err .caption {
+        color: var(--ghost-err);
+    }
+
+    .tone-dim .caption {
+        color: var(--ghost-dim);
+    }
+
+    .status {
+        color: var(--ghost-dim);
+        padding: 0 0.75ch;
+    }
+
+    .status:empty {
+        display: none;
+    }
+
+    .fill {
+        flex: 1;
+        height: 1px;
+        background: var(--ghost-faint);
+    }
+
+    .panel-body {
+        border-left: 1px solid var(--ghost-faint);
+        border-right: 1px solid var(--ghost-faint);
+        padding: 0.75rem 1.25rem;
+        margin: 0 0.4ch;
+    }
+</style>

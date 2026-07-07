@@ -7,7 +7,7 @@ export default defineConfig({
   integrations: [mdx()],
   markdown: {
     shikiConfig: {
-      theme: 'tokyo-night',
+      theme: 'css-variables',
       wrap: true,
     },
   },

@@ -1,0 +1,50 @@
+/* ── ▓▒░ GHOST DESIGN TOKENS ░▒▓ ─────────────────────────────────────────
+   The single source of truth for the palette, type, and motion constants.
+   Palette is verbatim from the VOX TUI Graphics Spec v0.1 (GHOST theme):
+   spectral monochrome, one violet accent. Components may not use raw hex —
+   colors live here (plus the Shiki variables below) and nowhere else. */
+
+:root {
+  /* spec palette */
+  --ghost-bg: #08090c;
+  --ghost-fg: #c7cdd6;
+  /* Spec dim is #4A505B (2.5:1 on bg — fails WCAG). It carries real text
+     (dates, descriptions, hints, footer), so it's lifted to #7E838D (≥4.8:1
+     on every surface) while staying the recessive spectral gray. */
+  --ghost-dim: #7e838d;
+  --ghost-faint: #2e333c;
+  --ghost-accent: #9d8cff;
+  --ghost-ok: #7ee8a0;
+  --ghost-err: #ff5566;
+  --ghost-warn: #e8c06a;
+
+  /* derived, still spectral */
+  --ghost-surface: #0c0e13;   /* panels, code blocks */
+  --ghost-chrome: #10131a;    /* header / status bars */
+  --ghost-bright: #e2e6ec;    /* emphasis (the old "green"-that-was-white) */
+  --ghost-accent-dim: #6f63c0;
+  --ghost-selection: rgba(157, 140, 255, 0.14);
+  --ghost-overlay: rgba(8, 9, 12, 0.85);
+
+  /* type & rhythm — no pixel grid */
+  --ghost-font: 'JetBrains Mono', ui-monospace, monospace;
+  --ghost-lh: 1.6;
+  --ghost-measure: 72ch;
+
+  /* motion (spec tick ≈ 110ms) */
+  --ghost-tick: 110ms;
+  --ghost-blink: 1.1s;
+
+  /* Shiki `css-variables` theme (Astro 4 variable names) */
+  --astro-code-color-text: var(--ghost-fg);
+  --astro-code-color-background: var(--ghost-surface);
+  --astro-code-token-comment: var(--ghost-dim);
+  --astro-code-token-keyword: var(--ghost-accent);
+  --astro-code-token-string: #8f97a3;
+  --astro-code-token-string-expression: #9aa3ae;
+  --astro-code-token-function: var(--ghost-bright);
+  --astro-code-token-constant: #b4a8ff;
+  --astro-code-token-parameter: var(--ghost-fg);
+  --astro-code-token-punctuation: #5a6170;
+  --astro-code-token-link: var(--ghost-accent);
+}

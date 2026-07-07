@@ -1,25 +1,31 @@
 ---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/prose.css';
+import { withBase } from '../lib/url';
+
 interface Props {
     title: string;
+    description?: string;
+    mode?: 'stream' | 'reading';
 }
 
-const { title } = Astro.props;
-import '../styles/theme.css';
+const { title, description = "Pitticus's terminal blog", mode = 'stream' } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="description" content="Pitticus's Terminal Blog" />
+        <meta name="description" content={description} />
         <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-        
+
         <!-- Google Analytics 4 -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-DMT53RX6Z9"></script>
         <script is:inline>
@@ -29,20 +35,7 @@ import '../styles/theme.css';
             gtag('config', 'G-DMT53RX6Z9');
         </script>
     </head>
-    <body>
+    <body data-ghost-mode={mode}>
         <slot />
     </body>
 </html>
-
-<style is:global>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    html, body {
-        height: 100%;
-        background: var(--nvim-bg);
-    }
-</style>

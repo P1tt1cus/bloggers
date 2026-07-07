@@ -1,0 +1,101 @@
+---
+// Divider vocabulary from spec §05. `section` wraps a real heading; the
+// rest are decorative.
+interface Props {
+    variant: 'section' | 'sigil' | 'dots' | 'heavy';
+    label?: string;
+}
+
+const { variant, label } = Astro.props;
+---
+
+{
+    variant === 'section' && (
+        <div class="ghost-divider section">
+            <span class="chars" aria-hidden="true">──</span>
+            <span class="mark" aria-hidden="true">▓▒░</span>
+            <h2>{label}</h2>
+            <span class="mark" aria-hidden="true">░▒▓</span>
+            <span class="fill" aria-hidden="true" />
+        </div>
+    )
+}
+{
+    variant === 'sigil' && (
+        <div class="ghost-divider sigil" aria-hidden="true">
+            <span class="fill" />
+            <span class="glyph">⌁</span>
+            <span class="fill" />
+        </div>
+    )
+}
+{
+    variant === 'dots' && (
+        <div class="ghost-divider dots" aria-hidden="true">
+            · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+        </div>
+    )
+}
+{
+    variant === 'heavy' && (
+        <div class="ghost-divider heavy" aria-hidden="true">
+            <span class="chars">╾</span>
+            <span class="rule" />
+            {label && <span class="label">{label}</span>}
+            {label && <span class="rule" />}
+            <span class="chars">╼</span>
+        </div>
+    )
+}
+
+<style>
+    .ghost-divider {
+        display: flex;
+        align-items: center;
+        white-space: pre;
+        margin: 1.5rem 0;
+        color: var(--ghost-faint);
+    }
+
+    .section .mark {
+        color: var(--ghost-accent);
+        padding: 0 1ch;
+    }
+
+    .section h2 {
+        color: var(--ghost-bright);
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.25em;
+    }
+
+    .fill {
+        flex: 1;
+        height: 1px;
+        background: var(--ghost-faint);
+    }
+
+    .sigil .glyph {
+        color: var(--ghost-accent);
+        padding: 0 1.5ch;
+    }
+
+    .dots {
+        display: block;
+        overflow: hidden;
+        text-align: center;
+        color: var(--ghost-faint);
+        margin: 1rem 0;
+    }
+
+    .heavy .rule {
+        flex: 1;
+        height: 2px;
+        background: var(--ghost-faint);
+    }
+
+    .heavy .label {
+        color: var(--ghost-dim);
+        padding: 0 1.5ch;
+    }
+</style>

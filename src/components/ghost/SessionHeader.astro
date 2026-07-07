@@ -1,0 +1,68 @@
+---
+// Compact banner bar (spec §01), sticky on every page.
+import { withBase } from '../../lib/url';
+
+interface Props {
+    count?: number;
+    context?: string;
+}
+
+const { count, context } = Astro.props;
+---
+
+<header class="ghost-header">
+    <a class="brand" href={withBase('/')}>
+        <span class="bookend" aria-hidden="true">▐▓▒░</span>
+        <span class="name">PITTICUS</span>
+        <span class="bookend" aria-hidden="true">░▒▓▌</span>
+    </a>
+    <span class="meta">
+        terminal blog · ghost-mode{count !== undefined && <span class="wide"> · {count} transmissions</span>}{
+            context && <span> · {context}</span>
+        }
+    </span>
+</header>
+
+<style>
+    .ghost-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        gap: 1.25ch;
+        padding: 0.4rem 1.25rem;
+        background: var(--ghost-bg);
+        border-bottom: 1px solid var(--ghost-faint);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .brand {
+        text-decoration: none;
+        white-space: pre;
+    }
+
+    .bookend {
+        color: var(--ghost-accent);
+    }
+
+    .name {
+        color: var(--ghost-bright);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+
+    .meta {
+        color: var(--ghost-dim);
+        font-size: 0.85rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 640px) {
+        .wide {
+            display: none;
+        }
+    }
+</style>

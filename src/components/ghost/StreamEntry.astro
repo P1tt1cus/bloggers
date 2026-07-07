@@ -1,0 +1,157 @@
+---
+// One transmission as an event-stream line (spec §03). A real <a> so no-JS,
+// middle-click, and SEO work; client JS intercepts plain clicks on posts.
+import { formatDate, type Transmission } from '../../lib/transmissions';
+
+interface Props {
+    t: Transmission;
+}
+
+const { t } = Astro.props;
+const isArtifact = t.kind === 'artifact';
+---
+
+<li class="ghost-entry-item">
+    <a
+        class="ghost-entry"
+        href={t.href}
+        data-ghost-entry
+        data-slug={t.slug}
+        data-kind={t.kind}
+        data-title={t.title}
+        data-date={formatDate(t.date)}
+        target={isArtifact ? '_blank' : undefined}
+        rel={isArtifact ? 'noopener' : undefined}
+    >
+        <span class="entry-main">
+            <span class="marker" aria-hidden="true"></span>
+            <span class="date">{formatDate(t.date)}</span>
+            <span class:list={['glyph', t.kind]} aria-hidden="true">{isArtifact ? '◈' : '✓'}</span>
+            <span class="kind">{t.kind}</span>
+            <span class="title">{t.title}</span>
+            <span class="meta">{isArtifact ? '↗ standalone' : `${t.kind === 'post' ? t.minutes : 0} min`}</span>
+        </span>
+        <span class="entry-desc">
+            <span class="branch" aria-hidden="true">└</span>
+            <span class="desc">{t.description}</span>
+        </span>
+    </a>
+</li>
+
+<style>
+    .ghost-entry-item {
+        list-style: none;
+    }
+
+    .ghost-entry {
+        display: block;
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-left: 2px solid transparent;
+        text-decoration: none;
+        cursor: pointer;
+        /* keep a j/k-selected row clear of the sticky header/status bars */
+        scroll-margin-block: 4rem 3rem;
+    }
+
+    .ghost-entry:hover,
+    .ghost-entry[data-ghost-selected] {
+        background: var(--ghost-chrome);
+        border-left-color: var(--ghost-accent);
+    }
+
+    .entry-main {
+        display: flex;
+        align-items: baseline;
+        gap: 2ch;
+        white-space: nowrap;
+    }
+
+    .marker {
+        display: inline-block;
+        width: 2ch;
+        flex: none;
+        color: var(--ghost-accent);
+        text-align: center;
+    }
+
+    .ghost-entry[data-ghost-selected] .marker::before {
+        content: '⌁';
+    }
+
+    .date {
+        color: var(--ghost-dim);
+        flex: none;
+    }
+
+    .glyph {
+        flex: none;
+    }
+
+    .glyph.artifact {
+        color: var(--ghost-accent);
+    }
+
+    .glyph.post {
+        color: var(--ghost-ok);
+    }
+
+    .kind {
+        color: var(--ghost-dim);
+        flex: none;
+        width: 8ch;
+    }
+
+    .title {
+        color: var(--ghost-fg);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ghost-entry:hover .title,
+    .ghost-entry[data-ghost-selected] .title {
+        color: var(--ghost-bright);
+    }
+
+    .meta {
+        color: var(--ghost-dim);
+        margin-left: auto;
+        flex: none;
+        font-size: 0.85rem;
+    }
+
+    .entry-desc {
+        display: flex;
+        gap: 1ch;
+        padding-left: 16ch;
+        color: var(--ghost-dim);
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .branch {
+        color: var(--ghost-faint);
+    }
+
+    .ghost-entry.ghost-dimmed {
+        opacity: 0.35;
+    }
+
+    @media (max-width: 640px) {
+        .entry-desc,
+        .kind {
+            display: none;
+        }
+
+        .entry-main {
+            gap: 1.5ch;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .meta {
+            display: none;
+        }
+    }
+</style>

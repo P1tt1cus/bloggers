@@ -1,0 +1,141 @@
+/* ── ▓▒░ PROSE ░▒▓ ───────────────────────────────────────────────────────
+   The single typography source for rendered markdown (.prose), used by the
+   in-place reader and standalone post pages alike. */
+
+.prose {
+  max-width: var(--ghost-measure);
+  line-height: var(--ghost-lh);
+}
+
+.prose h1 {
+  color: var(--ghost-bright);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ghost-faint);
+}
+
+.prose h2 {
+  color: var(--ghost-bright);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.prose h3 {
+  color: var(--ghost-fg);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.prose h2::before,
+.prose h3::before {
+  content: '── ';
+  color: var(--ghost-faint);
+}
+
+.prose p {
+  margin: 0.9rem 0;
+}
+
+.prose a {
+  color: var(--ghost-accent);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--ghost-accent-dim);
+}
+
+.prose a:hover {
+  border-bottom-style: solid;
+}
+
+.prose strong {
+  color: var(--ghost-bright);
+  font-weight: 600;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0.9rem 0 0.9rem 1.75rem;
+}
+
+.prose li {
+  margin: 0.35rem 0;
+}
+
+.prose li::marker {
+  color: var(--ghost-dim);
+}
+
+.prose blockquote {
+  margin: 1.25rem 0;
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 3px solid var(--ghost-accent-dim);
+  background: var(--ghost-surface);
+  color: var(--ghost-dim);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--ghost-faint);
+  margin: 1.5rem 0;
+}
+
+.prose code {
+  font-family: var(--ghost-font);
+  font-size: 0.9em;
+  background: var(--ghost-surface);
+  color: var(--ghost-accent-dim);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* Code blocks read as tool-call panels: surface, faint frame, and a dim
+   language chip riding the top border (Astro sets data-language on pre). */
+.prose pre {
+  position: relative;
+  margin: 1.75rem 0 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--ghost-surface);
+  border: 1px solid var(--ghost-faint);
+  overflow-x: auto;
+  line-height: var(--ghost-lh);
+}
+
+.prose pre::before {
+  content: '┤ ' attr(data-language) ' ├';
+  position: absolute;
+  top: -0.8em;
+  left: 1rem;
+  padding: 0 0.25rem;
+  background: var(--ghost-bg);
+  color: var(--ghost-dim);
+  font-size: 0.75rem;
+}
+
+.prose pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9rem;
+}
+
+.prose mark.ghost-match {
+  background: var(--ghost-selection);
+  color: var(--ghost-bright);
+}
+
+.prose mark.ghost-match.active {
+  outline: 1px solid var(--ghost-accent);
+}
+
+/* Streaming tail after the last content block */
+.prose .stream-tail {
+  color: var(--ghost-dim);
+}

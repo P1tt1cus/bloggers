@@ -1,48 +1,17 @@
 ---
-import BlogContainer from '../components/BlogContainer.astro';
-import Layout from '../layouts/Layout.astro';
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import Session from '../layouts/Session.astro';
+import Banner from '../components/ghost/Banner.astro';
+import Stream from '../components/ghost/Stream.astro';
+import Reader from '../components/ghost/Reader.astro';
+import { getTransmissions } from '../lib/transmissions';
 
-const posts = await Astro.glob('./blog/*.md');
-
-// Read HTML files manually since Astro.glob treats them as components
-const htmlPosts = [];
-try {
-    const blogDir = join(process.cwd(), 'src/pages/blog');
-    const files = readdirSync(blogDir);
-    const htmlFiles = files.filter(file => file.endsWith('.html'));
-    
-    for (const filename of htmlFiles) {
-        const slug = filename.replace('.html', '');
-        const filePath = join(blogDir, filename);
-        const htmlContent = readFileSync(filePath, 'utf-8');
-        
-        // Extract title from HTML if it exists, otherwise use filename
-        const titleMatch = htmlContent.match(/<title>(.*?)<\/title>/i);
-        const title = titleMatch ? titleMatch[1] : slug;
-        
-        htmlPosts.push({
-            frontmatter: {
-                title,
-                slug,
-                date: new Date().toISOString().split('T')[0],
-                description: 'HTML content'
-            },
-            // Don't provide compiledContent for external posts - let JavaScript handle direct navigation
-            compiledContent: () => '', // Empty content so JavaScript handles the external link
-            type: 'html',
-            isExternal: true,
-            directUrl: `/bloggers/blog/${slug}.html` // Add direct URL for immediate access
-        });
-    }
-} catch (error) {
-    console.log('No HTML files found or error reading them:', error);
-}
-
-const allPosts = [...posts, ...htmlPosts];
+const transmissions = await getTransmissions();
 ---
 
-<Layout title="Pitticus's Blog">
-    <BlogContainer posts={allPosts} />
-</Layout>
+<Session title="PITTICUS — terminal blog" mode="stream" count={transmissions.length}>
+    <div data-ghost-stream-region>
+        <Banner count={transmissions.length} />
+        <Stream transmissions={transmissions} />
+    </div>
+    <Reader />
+</Session>

@@ -1,0 +1,123 @@
+/* ── ▓▒░ BASE ░▒▓ ────────────────────────────────────────────────────────
+   Reset, body defaults, global primitives (cursor, scanlines, overlays,
+   selection, focus) — everything page-independent that isn't a token. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--ghost-bg);
+  color: var(--ghost-fg);
+  font-family: var(--ghost-font);
+  font-size: 15px;
+  line-height: var(--ghost-lh);
+}
+
+::selection {
+  background: var(--ghost-selection);
+  color: var(--ghost-bright);
+}
+
+:focus-visible {
+  outline: 1px solid var(--ghost-accent);
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Blinking block cursor. The kill-switch below freezes it to solid under
+   prefers-reduced-motion, which keeps it visible but still. */
+[data-ghost-cursor]::after {
+  content: '▊';
+  color: var(--ghost-accent);
+  animation: ghost-blink var(--ghost-blink) steps(1, end) infinite;
+}
+
+@keyframes ghost-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Search-jump flash target */
+.ghost-flash {
+  animation: ghost-flash-fade 1.2s steps(2, end);
+}
+
+@keyframes ghost-flash-fade {
+  0%,
+  60% {
+    background: var(--ghost-selection);
+  }
+}
+
+/* CRT scanlines — motion decision: removed entirely under reduced motion. */
+.scanlines {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scanlines {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgba(0, 0, 0, 0.14) 2px 3px
+    );
+    opacity: 0.5;
+    animation: ghost-scan-roll 9s linear infinite;
+  }
+
+  @keyframes ghost-scan-roll {
+    to {
+      background-position: 0 3px;
+    }
+  }
+}
+
+/* Global reduced-motion kill-switch (spinner tickers are additionally
+   gated in JS — this handles every CSS animation/transition). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* The search-jump flash is animation-only; give reduced-motion users a
+     static highlight (JS removes the class after the same delay). */
+  .ghost-flash {
+    background: var(--ghost-selection);
+  }
+}
