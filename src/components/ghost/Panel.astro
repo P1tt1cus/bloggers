@@ -19,21 +19,21 @@ const corners =
 ---
 
 <section class:list={['ghost-panel', `tone-${tone}`, className]}>
-    <div class="cap" aria-hidden="true">
-        <span class="chars">{corners.tl}</span>
+    <div class="cap">
+        <span class="chars" aria-hidden="true">{corners.tl}</span>
         <span class="caption"><slot name="caption">{caption}</slot></span>
-        <span class="chars">├</span>
-        <span class="fill"></span>
-        <span class="chars">{corners.tr}</span>
+        <span class="chars" aria-hidden="true">├</span>
+        <span class="fill" aria-hidden="true"></span>
+        <span class="chars" aria-hidden="true">{corners.tr}</span>
     </div>
     <div class="panel-body">
         <slot />
     </div>
-    <div class="cap" aria-hidden="true">
-        <span class="chars">{corners.bl}</span>
+    <div class="cap">
+        <span class="chars" aria-hidden="true">{corners.bl}</span>
         <span class="status"><slot name="status">{status}</slot></span>
-        <span class="fill"></span>
-        <span class="chars">{corners.br}</span>
+        <span class="fill" aria-hidden="true"></span>
+        <span class="chars" aria-hidden="true">{corners.br}</span>
     </div>
 </section>
 

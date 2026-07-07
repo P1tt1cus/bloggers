@@ -37,6 +37,13 @@ export function initStatus(): void {
     },
     { passive: true },
   );
+
+  // Standalone post pages load straight into reading mode and may never fire
+  // a scroll event (short posts), so seed the ctx meter from the start.
+  if (document.body.dataset.ghostMode === 'reading') {
+    meterEl?.setAttribute('aria-label', 'reading progress');
+    updateReadingProgress();
+  }
 }
 
 export function enterReading(slug: string): void {
@@ -47,8 +54,10 @@ export function enterReading(slug: string): void {
   if (hintEl) hintEl.textContent = 'esc back';
   if (meterEl) {
     meterEl.setAttribute('role', 'progressbar');
+    meterEl.setAttribute('aria-label', 'reading progress');
     meterEl.setAttribute('aria-valuemin', '0');
     meterEl.setAttribute('aria-valuemax', '100');
+    meterEl.removeAttribute('aria-hidden');
   }
   updateReadingProgress();
 }
@@ -61,9 +70,13 @@ export function enterStream(selected: number, total: number): void {
   if (hintEl) hintEl.textContent = '▲▼ j/k · ⏎ open · ? keys';
   if (meterEl) {
     meterEl.removeAttribute('role');
+    meterEl.removeAttribute('aria-label');
     meterEl.removeAttribute('aria-valuemin');
     meterEl.removeAttribute('aria-valuemax');
     meterEl.removeAttribute('aria-valuenow');
+    // The step counter is a decorative position glyph string; hide the raw
+    // ●●◌◌ from assistive tech.
+    meterEl.setAttribute('aria-hidden', 'true');
   }
   updateStepMeter(selected, total);
 }

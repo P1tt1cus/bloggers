@@ -7,6 +7,9 @@ import { getEntries } from './stream';
 
 interface ReadingMatch {
   mark: HTMLElement;
+  before: string;
+  hit: string;
+  after: string;
 }
 
 interface StreamMatch {
@@ -25,6 +28,7 @@ let active = -1;
 let readingMatches: ReadingMatch[] = [];
 let streamMatches: StreamMatch[] = [];
 let markedParents = new Set<HTMLElement>();
+let restoreFocusEl: HTMLElement | null = null;
 
 export function initSearch(): void {
   overlay = document.querySelector('[data-ghost-overlay="search"]');
@@ -58,6 +62,7 @@ export const isSearchOpen = (): boolean => openFlag;
 
 export function openSearch(): void {
   if (!overlay || !input) return;
+  restoreFocusEl = document.activeElement as HTMLElement | null;
   openFlag = true;
   overlay.hidden = false;
   const reading = document.body.dataset.ghostMode === 'reading';
@@ -75,9 +80,30 @@ export function closeSearch(): void {
   undimEntries();
   renderStatus('');
   if (resultsEl) resultsEl.replaceChildren();
-  (document.querySelector('[data-ghost-reader]') as HTMLElement | null)?.focus?.({
-    preventScroll: true,
-  });
+  restoreFocus();
+}
+
+/** Return focus to wherever it was before the overlay opened, else to a
+ *  sensible in-page target — never leave it stranded on <body>. */
+function restoreFocus(): void {
+  const prior = restoreFocusEl;
+  restoreFocusEl = null;
+  if (prior && prior !== document.body && document.contains(prior) && isVisible(prior)) {
+    prior.focus({ preventScroll: true });
+    return;
+  }
+  if (document.body.dataset.ghostMode === 'reading') {
+    (document.querySelector('[data-ghost-reader]') as HTMLElement | null)?.focus?.({
+      preventScroll: true,
+    });
+    return;
+  }
+  const selected = document.querySelector<HTMLElement>('[data-ghost-entry][data-ghost-selected]');
+  selected?.focus({ preventScroll: true });
+}
+
+function isVisible(el: HTMLElement): boolean {
+  return el.offsetParent !== null || el === document.documentElement;
 }
 
 function runQuery(): void {
@@ -165,7 +191,14 @@ function runReadingQuery(q: string, started: number): void {
   if (!prose) return;
 
   const needle = q.toLowerCase();
-  const walker = document.createTreeWalker(prose, NodeFilter.SHOW_TEXT);
+  // Skip the decorative streaming tail (spinner + cursor) so it can never
+  // be matched or wrapped — the motion ticker would clobber a mark inside it.
+  const walker = document.createTreeWalker(prose, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) =>
+      (n as Text).parentElement?.closest('.stream-tail')
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
+  });
   const hits: { node: Text; index: number }[] = [];
   let node: Text | null;
   while ((node = walker.nextNode() as Text | null)) {
@@ -178,9 +211,13 @@ function runReadingQuery(q: string, started: number): void {
     }
   }
 
-  // Wrap back-to-front so earlier offsets stay valid within each node.
+  // Wrap back-to-front so earlier offsets stay valid within each node, and
+  // capture each match's OWN surrounding context (not the parent's first hit).
   for (let i = hits.length - 1; i >= 0; i--) {
     const { node: hitNode, index } = hits[i];
+    const before = hitNode.data.slice(Math.max(0, index - 28), index).trimStart();
+    const after = hitNode.data.slice(index + q.length, index + q.length + 36).trimEnd();
+    const hitText = hitNode.data.slice(index, index + q.length);
     const range = document.createRange();
     range.setStart(hitNode, index);
     range.setEnd(hitNode, index + q.length);
@@ -188,7 +225,7 @@ function runReadingQuery(q: string, started: number): void {
     mark.className = 'ghost-match';
     range.surroundContents(mark);
     if (mark.parentElement) markedParents.add(mark.parentElement);
-    readingMatches.unshift({ mark });
+    readingMatches.unshift({ mark, before, hit: hitText, after });
   }
 
   const ms = Math.max(1, Math.round(performance.now() - started));
@@ -198,21 +235,17 @@ function runReadingQuery(q: string, started: number): void {
       : '✗ no matches',
   );
 
-  readingMatches.forEach(({ mark }, i) => {
+  readingMatches.forEach(({ before, hit, after }, i) => {
     const li = document.createElement('li');
     const ctx = document.createElement('span');
     ctx.className = 'r-ctx';
-    const parentText = mark.parentElement?.textContent ?? '';
-    const pos = parentText.toLowerCase().indexOf(needle);
-    const before = parentText.slice(Math.max(0, pos - 28), Math.max(0, pos));
-    const after = parentText.slice(pos + q.length, pos + q.length + 36);
     ctx.textContent = `…${before}`;
-    const hit = document.createElement('mark');
-    hit.textContent = parentText.slice(pos, pos + q.length);
+    const hitEl = document.createElement('mark');
+    hitEl.textContent = hit;
     const tail = document.createElement('span');
     tail.className = 'r-ctx';
     tail.textContent = `${after}…`;
-    li.append(ctx, hit, tail);
+    li.append(ctx, hitEl, tail);
     li.addEventListener('click', () => {
       active = i;
       activate();

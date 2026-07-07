@@ -114,4 +114,10 @@ a {
   html {
     scroll-behavior: auto;
   }
+
+  /* The search-jump flash is animation-only; give reduced-motion users a
+     static highlight (JS removes the class after the same delay). */
+  .ghost-flash {
+    background: var(--ghost-selection);
+  }
 }

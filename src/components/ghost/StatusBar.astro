@@ -23,12 +23,14 @@ const initialHint = mode === 'reading' ? 'esc back' : '▲▼ j/k · ⏎ open ·
         <a class="brand" href={withBase('/')}>PITTICUS</a>
     </span>
     <span class="sep" aria-hidden="true">│</span>
-    <span class="seg seg-context" data-ghost-status-context>{initialContext}</span>
+    <span class="seg seg-context" data-ghost-status-context aria-live="polite">{initialContext}</span>
     <span class="sep" aria-hidden="true">│</span>
     <span
         class="seg seg-meter"
         data-ghost-status-meter
         role={mode === 'reading' ? 'progressbar' : undefined}
+        aria-label={mode === 'reading' ? 'reading progress' : undefined}
+        aria-hidden={mode === 'reading' ? undefined : 'true'}
         aria-valuemin={mode === 'reading' ? 0 : undefined}
         aria-valuemax={mode === 'reading' ? 100 : undefined}
         aria-valuenow={mode === 'reading' ? 0 : undefined}>{initialMeter}</span>

@@ -8,7 +8,10 @@
   /* spec palette */
   --ghost-bg: #08090c;
   --ghost-fg: #c7cdd6;
-  --ghost-dim: #4a505b;
+  /* Spec dim is #4A505B (2.5:1 on bg — fails WCAG). It carries real text
+     (dates, descriptions, hints, footer), so it's lifted to #7E838D (≥4.8:1
+     on every surface) while staying the recessive spectral gray. */
+  --ghost-dim: #7e838d;
   --ghost-faint: #2e333c;
   --ghost-accent: #9d8cff;
   --ghost-ok: #7ee8a0;

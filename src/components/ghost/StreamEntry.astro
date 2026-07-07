@@ -49,6 +49,8 @@ const isArtifact = t.kind === 'artifact';
         border-left: 2px solid transparent;
         text-decoration: none;
         cursor: pointer;
+        /* keep a j/k-selected row clear of the sticky header/status bars */
+        scroll-margin-block: 4rem 3rem;
     }
 
     .ghost-entry:hover,

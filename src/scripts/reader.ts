@@ -1,7 +1,11 @@
 // In-place reader: clones inert <template> post HTML into the panel.
-// history.pushState on open + popstate handling make browser Back = Esc.
+// The URL hash (#read-slug) is the single source of truth — every open and
+// close routes through history, so browser Back/Forward, Esc, direct load,
+// and refresh all stay in sync.
 import { scrollBehavior } from './prefs';
 import { enterReading, flashStatus } from './status';
+
+const HASH_PREFIX = '#read-';
 
 let readerEl: HTMLElement | null;
 let bodyEl: HTMLElement | null;
@@ -21,16 +25,63 @@ export function initReader(onClose: () => void): void {
   capEl = document.querySelector('[data-ghost-reader-cap]');
   onCloseToStream = onClose;
 
-  window.addEventListener('popstate', () => {
-    if (openSlug && !window.location.hash.startsWith('#read-')) {
-      closeReader({ fromHistory: true });
-    }
-  });
+  document
+    .querySelector('[data-ghost-reader-close]')
+    ?.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeReader();
+    });
+
+  window.addEventListener('popstate', reconcileHash);
+  reconcileHash(); // reopen (or strip) a reader hash present on initial load
 }
 
 export const isReaderOpen = (): boolean => openSlug !== null;
 
+function slugFromHash(): string | null {
+  return location.hash.startsWith(HASH_PREFIX)
+    ? decodeURIComponent(location.hash.slice(HASH_PREFIX.length))
+    : null;
+}
+
+function hasTemplate(slug: string): boolean {
+  return !!document.querySelector(`[data-ghost-template="${CSS.escape(slug)}"]`);
+}
+
+/** Sync DOM to the current hash. Called on load and on every popstate. */
+function reconcileHash(): void {
+  const wanted = slugFromHash();
+  if (wanted && wanted !== openSlug) {
+    if (hasTemplate(wanted)) renderOpen(wanted);
+    else if (readerEl) {
+      // Stale hash for a post that doesn't exist here — strip without a new entry.
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } else if (!wanted && openSlug) {
+    renderClose();
+  }
+}
+
+/** User-initiated open: push a history entry, then render. */
 export function openReader(slug: string): void {
+  if (!readerEl || openSlug === slug || !hasTemplate(slug)) return;
+  history.pushState({ ghostRead: slug }, '', `${HASH_PREFIX}${slug}`);
+  renderOpen(slug);
+}
+
+/** User-initiated close: walk history back so the URL/hash stays truthful. */
+export function closeReader(): void {
+  if (!openSlug) return;
+  if ((history.state as { ghostRead?: string } | null)?.ghostRead) {
+    history.back(); // popstate → reconcileHash → renderClose
+  } else {
+    // Reader was opened by a direct #read- load (no entry of ours to pop).
+    history.replaceState(null, '', location.pathname + location.search);
+    renderClose();
+  }
+}
+
+function renderOpen(slug: string): void {
   const template = document.querySelector<HTMLTemplateElement>(
     `[data-ghost-template="${CSS.escape(slug)}"]`,
   );
@@ -49,15 +100,13 @@ export function openReader(slug: string): void {
   readerEl.hidden = false;
   window.scrollTo({ top: 0, behavior: 'auto' });
   readerEl.focus({ preventScroll: true });
-
-  history.pushState({ ghostRead: slug }, '', `#read-${slug}`);
   openSlug = slug;
 
   enterReading(slug);
   flashStatus('◍', 'materializing…', 'done');
 }
 
-export function closeReader(opts: { fromHistory?: boolean } = {}): void {
+function renderClose(): void {
   if (!openSlug || !readerEl || !bodyEl) return;
   openSlug = null;
 
@@ -66,10 +115,9 @@ export function closeReader(opts: { fromHistory?: boolean } = {}): void {
   document.body.dataset.ghostMode = 'stream';
   window.scrollTo({ top: savedScrollY, behavior: 'auto' });
 
-  // Pop our own hash entry unless history already did it (Back button).
-  if (!opts.fromHistory && (history.state as { ghostRead?: string } | null)?.ghostRead) {
-    history.back();
-  }
+  // Any overlay open over the reader must close with it — after the mode flip
+  // so focus restoration lands on the stream, not the now-hidden reader.
+  document.dispatchEvent(new CustomEvent('ghost:reset-overlays'));
 
   onCloseToStream?.();
   flashStatus('†', 'killed read_post · back to stream');

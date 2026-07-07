@@ -47,25 +47,42 @@ function stopResolved(): void {
 }
 
 export function initMotion(): void {
-  if (!prefersReduced()) {
-    start();
-    bootReveal();
-  }
-
+  // Register the safety handlers FIRST so a throw in bootReveal (e.g. blocked
+  // storage) can never strand the ticker without its listeners.
   onMotionPreferenceChange((reduced) => (reduced ? stopResolved() : start()));
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pause();
     else if (!prefersReduced()) start();
   });
+
+  if (!prefersReduced()) {
+    start();
+    bootReveal();
+  }
 }
 
 /* ── boot reveal (index only, once per session, any input skips) ──────── */
 
+let bootedFallback = false;
+
+/** True if the boot reveal already played this session. Storage access can
+ *  throw where cookies/storage are blocked, so fall back to a module flag. */
+function alreadyBooted(): boolean {
+  try {
+    if (sessionStorage.getItem(BOOT_KEY)) return true;
+    sessionStorage.setItem(BOOT_KEY, '1');
+    return false;
+  } catch {
+    const was = bootedFallback;
+    bootedFallback = true;
+    return was;
+  }
+}
+
 function bootReveal(): void {
   const banner = document.querySelector<HTMLElement>('[data-ghost-banner]');
-  if (!banner || sessionStorage.getItem(BOOT_KEY)) return;
-  sessionStorage.setItem(BOOT_KEY, '1');
+  if (!banner || alreadyBooted()) return;
 
   const lines = [...banner.querySelectorAll<HTMLElement>('[data-ghost-boot-line]')];
   const statusEl = banner.querySelector<HTMLElement>('[data-ghost-boot-status]');
