@@ -65,8 +65,7 @@ export function openSearch(): void {
   restoreFocusEl = document.activeElement as HTMLElement | null;
   openFlag = true;
   overlay.hidden = false;
-  const reading = document.body.dataset.ghostMode === 'reading';
-  if (labelEl) labelEl.textContent = reading ? 'searching transmission…' : 'searching transmissions…';
+  if (labelEl) labelEl.textContent = 'searching…';
   input.value = '';
   input.focus();
   runQuery();

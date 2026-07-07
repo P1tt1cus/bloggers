@@ -3,11 +3,10 @@
 import { withBase } from '../../lib/url';
 
 interface Props {
-    count?: number;
     context?: string;
 }
 
-const { count, context } = Astro.props;
+const { context } = Astro.props;
 ---
 
 <header class="ghost-header">
@@ -17,9 +16,7 @@ const { count, context } = Astro.props;
         <span class="bookend" aria-hidden="true">░▒▓▌</span>
     </a>
     <span class="meta">
-        terminal blog{count !== undefined && <span class="wide"> · {count} transmissions</span>}{
-            context && <span> · {context}</span>
-        }
+        terminal blog{context && <span> · {context}</span>}
     </span>
 </header>
 
@@ -58,11 +55,5 @@ const { count, context } = Astro.props;
         font-size: 0.85rem;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    @media (max-width: 640px) {
-        .wide {
-            display: none;
-        }
     }
 </style>

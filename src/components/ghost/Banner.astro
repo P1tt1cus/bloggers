@@ -2,12 +2,6 @@
 // Index hero (spec §01, large banner). Markup is fully visible by default —
 // the motion layer opts IN to a boot reveal; a JS failure can never blank it.
 import GhostSprite from './GhostSprite.astro';
-
-interface Props {
-    count: number;
-}
-
-const { count } = Astro.props;
 ---
 
 <header class="ghost-banner" data-ghost-banner>
@@ -17,15 +11,12 @@ const { count } = Astro.props;
     </div>
     <div class="boot">
         <p data-ghost-boot-line>pitticus v2.0.0 — terminal blog</p>
-        <p data-ghost-boot-line>online · {count} transmissions</p>
+        <p data-ghost-boot-line>online</p>
         <p class="boot-rule" data-ghost-boot-line aria-hidden="true">──────────────────────────────</p>
-        <p data-ghost-boot-line>select a transmission, or press <kbd>?</kbd> for help</p>
+        <p data-ghost-boot-line>select a post, or press <kbd>?</kbd> for help</p>
     </div>
     <p class="sigil-line" data-ghost-boot-line>
         <span class="sigil" aria-hidden="true">⌁</span> awaiting selection <span data-ghost-cursor></span>
-    </p>
-    <p class="scan-line" data-ghost-boot-line>
-        <span class="scan-result" data-ghost-boot-status><span class="ok" aria-hidden="true">✓</span> {count} transmissions · 8ms</span>
     </p>
 </header>
 
@@ -61,16 +52,6 @@ const { count } = Astro.props;
 
     .sigil {
         color: var(--ghost-accent);
-    }
-
-    .scan-line {
-        margin-top: 0.25rem;
-        color: var(--ghost-dim);
-        min-height: 1.6em;
-    }
-
-    .scan-line .ok {
-        color: var(--ghost-ok);
     }
 
     @media (max-width: 640px) {

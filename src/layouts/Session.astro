@@ -22,7 +22,7 @@ const { title, description, mode = 'stream', count, context } = Astro.props;
     <div class="ghost-session">
         <p class="window-caption" aria-hidden="true">pitticus — ~/blog — 80×∞</p>
         <div class="ghost-frame">
-            <SessionHeader count={count} context={context} />
+            <SessionHeader context={context} />
             <main class="session-main">
                 <slot />
             </main>

@@ -10,7 +10,7 @@ const transmissions = await getTransmissions();
 
 <Session title="PITTICUS — terminal blog" mode="stream" count={transmissions.length}>
     <div data-ghost-stream-region>
-        <Banner count={transmissions.length} />
+        <Banner />
         <Stream transmissions={transmissions} />
     </div>
     <Reader />
