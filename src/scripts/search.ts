@@ -155,7 +155,7 @@ function runStreamQuery(q: string, started: number): void {
     date.textContent = `${entry.dataset.date ?? ''}  `;
     const glyph = document.createElement('span');
     glyph.className = 'r-glyph';
-    glyph.textContent = entry.dataset.kind === 'artifact' ? '◈ ' : '✓ ';
+    glyph.textContent = entry.dataset.kind === 'post' ? '✓ ' : '◈ ';
     const kind = document.createElement('span');
     kind.className = 'r-kind';
     kind.textContent = `${entry.dataset.kind}  `;
@@ -186,15 +186,19 @@ function runReadingQuery(q: string, started: number): void {
     return;
   }
 
-  const prose = document.querySelector('[data-ghost-reader-body]');
+  // Prefer the reader body; on reading-mode pages without a reader (e.g. the
+  // component gallery) fall back to the whole main column so search still works.
+  const prose =
+    document.querySelector('[data-ghost-reader-body]') ??
+    document.querySelector('.session-main');
   if (!prose) return;
 
   const needle = q.toLowerCase();
-  // Skip the decorative streaming tail (spinner + cursor) so it can never
-  // be matched or wrapped — the motion ticker would clobber a mark inside it.
+  // Skip animated decorations (streaming tail, standalone spinners, cursor) so a
+  // mark is never wrapped inside them — the motion ticker would clobber it.
   const walker = document.createTreeWalker(prose, NodeFilter.SHOW_TEXT, {
     acceptNode: (n) =>
-      (n as Text).parentElement?.closest('.stream-tail')
+      (n as Text).parentElement?.closest('.stream-tail, [data-ghost-spinner], [data-ghost-cursor]')
         ? NodeFilter.FILTER_REJECT
         : NodeFilter.FILTER_ACCEPT,
   });
@@ -303,11 +307,15 @@ function activate(): void {
   } else {
     const match = streamMatches[active];
     if (!match) return;
+    const kind = match.entry.dataset.kind;
+    const href = match.entry.href;
     closeSearch();
-    if (match.entry.dataset.kind === 'post') {
+    if (kind === 'post') {
       openReader(match.entry.dataset.slug ?? '');
+    } else if (kind === 'page') {
+      window.location.href = href; // same-tab internal navigation
     } else {
-      window.open(match.entry.href, '_blank', 'noopener');
+      window.open(href, '_blank', 'noopener');
     }
   }
 }

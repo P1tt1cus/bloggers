@@ -1,0 +1,335 @@
+---
+import { Code } from 'astro:components';
+import Session from '../../layouts/Session.astro';
+import Panel from '../../components/ghost/Panel.astro';
+import Divider from '../../components/ghost/Divider.astro';
+import Glyph from '../../components/ghost/Glyph.astro';
+import Spinner from '../../components/ghost/Spinner.astro';
+import GhostSprite from '../../components/ghost/GhostSprite.astro';
+import { withBase } from '../../lib/url';
+
+const swatches: [string, string, string][] = [
+    ['--ghost-bg', 'bg', 'background'],
+    ['--ghost-surface', 'surface', 'panels · code'],
+    ['--ghost-chrome', 'chrome', 'header · footer'],
+    ['--ghost-faint', 'faint', 'borders'],
+    ['--ghost-dim', 'dim', 'secondary text'],
+    ['--ghost-fg', 'fg', 'body text'],
+    ['--ghost-bright', 'bright', 'emphasis'],
+    ['--ghost-accent', 'accent', 'the one accent'],
+    ['--ghost-accent-dim', 'accent-dim', 'links · visited'],
+    ['--ghost-ok', 'ok', 'success'],
+    ['--ghost-warn', 'warn', 'warning'],
+    ['--ghost-err', 'err', 'error'],
+];
+
+const glyphs = [
+    { name: 'queued', tone: 'dim', desc: 'waiting' },
+    { name: 'thinking', tone: 'accent', desc: 'model active' },
+    { name: 'tool', tone: 'accent', desc: 'executing' },
+    { name: 'done', tone: 'ok', desc: 'success' },
+    { name: 'failed', tone: 'err', desc: 'error' },
+    { name: 'warn', tone: 'warn', desc: 'recoverable' },
+    { name: 'killed', tone: 'dim', desc: 'interrupt' },
+    { name: 'await', tone: 'accent', desc: 'needs input' },
+] as const;
+
+const spinners = [
+    { name: 'materialize', label: 'thinking…' },
+    { name: 'seance', label: 'consulting the model…' },
+    { name: 'phase', label: 'summoning context…' },
+    { name: 'drift', label: 'searching files…' },
+    { name: 'whisper', label: 'writing' },
+    { name: 'session', label: 'working' },
+    { name: 'streamdots', label: 'streaming' },
+] as const;
+
+const sampleCode = `// retry with capped exponential backoff
+fn backoff(attempt: u32) -> Duration {
+    let ms = 100u64 << attempt.min(6);
+    Duration::from_millis(ms)
+}`;
+---
+
+<Session
+    title="UI Components · PITTICUS"
+    description="A live gallery of the terminal UI components used across the blog."
+    mode="reading"
+    context="components"
+>
+    <article class="gallery">
+        <header class="gallery-head">
+            <GhostSprite />
+            <div class="head-text">
+                <h1>UI Components</h1>
+                <p>The terminal UI kit — palette, glyphs, spinners, panels, dividers, and type.</p>
+                <p class="back"><a href={withBase('/')}>⌁ return to stream</a></p>
+            </div>
+        </header>
+
+        <Divider variant="section" label="PALETTE" />
+        <div class="grid swatches">
+            {
+                swatches.map(([token, name, role]) => (
+                    <div class="swatch">
+                        <span class="chip" style={`background: var(${token})`} aria-hidden="true" />
+                        <span class="labels">
+                            <span class="l-name">{name}</span>
+                            <span class="l-role">{role}</span>
+                        </span>
+                    </div>
+                ))
+            }
+        </div>
+
+        <Divider variant="section" label="STATUS GLYPHS" />
+        <div class="grid cells">
+            {
+                glyphs.map((g) => (
+                    <div class="cell">
+                        <span class="cell-mark"><Glyph name={g.name} tone={g.tone} /></span>
+                        <span class="labels">
+                            <span class="l-name">{g.name}</span>
+                            <span class="l-role">{g.desc}</span>
+                        </span>
+                    </div>
+                ))
+            }
+        </div>
+
+        <Divider variant="section" label="SPINNERS" />
+        <p class="note">Animated on the shared 110&thinsp;ms ticker; frozen to a static frame under <code>prefers-reduced-motion</code>.</p>
+        <div class="grid cells">
+            {
+                spinners.map((s) => (
+                    <div class="cell">
+                        <span class="cell-mark spin"><Spinner name={s.name} /></span>
+                        <span class="labels">
+                            <span class="l-name">{s.name}</span>
+                            <span class="l-role">{s.label}</span>
+                        </span>
+                    </div>
+                ))
+            }
+        </div>
+
+        <Divider variant="section" label="PANELS" />
+        <div class="panels">
+            <Panel variant="round" caption="◈ read_file" status="✓ 2ms">
+                <p>path&nbsp;&nbsp;src/harness/agent.rs</p>
+                <p>range&nbsp;L120–L188</p>
+            </Panel>
+            <Panel variant="square" caption="✗ cargo test" tone="err" status="exit 101 · 41s">
+                <p>test retry::backoff_resets</p>
+                <p>assertion failed: attempts == 3</p>
+            </Panel>
+        </div>
+
+        <Divider variant="section" label="DIVIDERS" />
+        <div class="dividers">
+            <Divider variant="section" label="section header" />
+            <Divider variant="sigil" />
+            <Divider variant="dots" />
+            <Divider variant="heavy" label="end of stream" />
+        </div>
+
+        <Divider variant="section" label="PROGRESS" />
+        <div class="progress">
+            <p><span class="lbl">shade fill</span><span class="bar" aria-hidden="true"><span class="on">▓▓▓▓▓▓▓▓▓</span>░░░░░░</span><span class="pct">62%</span></p>
+            <p><span class="lbl">phase edge</span><span class="bar" aria-hidden="true"><span class="on">██████████▓▒░</span>··········</span><span class="pct">41%</span></p>
+            <p><span class="lbl">ascii-safe</span><span class="bar" aria-hidden="true"><span class="on">[=========&gt;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span><span class="pct">67%</span></p>
+            <p><span class="lbl">step</span><span class="bar" aria-hidden="true"><span class="on">●●●●</span>◌◌◌</span><span class="pct">4/7</span></p>
+            <p><span class="lbl">ctx window</span><span class="bar" aria-hidden="true"><span class="on">▓▓▓▓</span>░░░░</span><span class="pct">48%</span></p>
+        </div>
+
+        <Divider variant="section" label="CURSOR" />
+        <p class="cursor-demo"><span class="sig">⌁</span> awaiting instruction <span data-ghost-cursor /></p>
+
+        <Divider variant="section" label="TYPOGRAPHY" />
+        <div class="prose type-demo">
+            <h2>Heading two</h2>
+            <h3>Heading three</h3>
+            <p>
+                Body text with <a href={withBase('/')}>a link</a>, <strong>strong emphasis</strong>,
+                <em>italic emphasis</em>, and <code>inline code</code>.
+            </p>
+            <ul>
+                <li>an unordered list item</li>
+                <li>another item</li>
+            </ul>
+            <blockquote>A block quote, set off with an accent rule.</blockquote>
+            <Code code={sampleCode} lang="rust" theme="css-variables" />
+        </div>
+    </article>
+</Session>
+
+<style>
+    .gallery {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
+
+    .gallery-head {
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        flex-wrap: wrap;
+        margin: 1.5rem 0 0.5rem;
+    }
+
+    .head-text h1 {
+        color: var(--ghost-bright);
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .head-text p {
+        color: var(--ghost-dim);
+        margin: 0.2rem 0;
+    }
+
+    .back a {
+        color: var(--ghost-accent);
+        text-decoration: none;
+    }
+
+    .back a:hover {
+        text-decoration: underline;
+    }
+
+    .note {
+        color: var(--ghost-dim);
+        font-size: 0.85rem;
+        margin: -0.5rem 0 1rem;
+    }
+
+    .note code {
+        color: var(--ghost-accent);
+    }
+
+    .grid {
+        display: grid;
+        gap: 0.75rem 1.5rem;
+        margin: 0.5rem 0 0.5rem;
+    }
+
+    .swatches {
+        grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    }
+
+    .cells {
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+
+    .swatch,
+    .cell {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .chip {
+        width: 1.6rem;
+        height: 1.6rem;
+        flex: none;
+        border: 1px solid var(--ghost-faint);
+        border-radius: 3px;
+    }
+
+    .cell-mark {
+        width: 1.6rem;
+        flex: none;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .cell-mark.spin {
+        /* sized to the widest frame (drift is 9 chars) so glyphs never
+           overprint the label; short spinners centre in the same box */
+        width: 9ch;
+        white-space: pre;
+        text-align: center;
+    }
+
+    .labels {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.3;
+    }
+
+    .l-name {
+        color: var(--ghost-fg);
+    }
+
+    .l-role {
+        color: var(--ghost-dim);
+        font-size: 0.8rem;
+    }
+
+    .panels {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    }
+
+    .panels :global(.panel-body) {
+        /* pre-formatted rows can exceed a narrow panel; scroll locally
+           instead of forcing the whole page wide */
+        overflow-x: auto;
+    }
+
+    .panels :global(.panel-body p) {
+        color: var(--ghost-fg);
+        white-space: pre;
+    }
+
+    .dividers > :global(*) {
+        margin-top: 0.25rem;
+    }
+
+    .progress {
+        /* the widest bars overflow a phone viewport; contain the scroll
+           here so the page body never scrolls horizontally */
+        overflow-x: auto;
+    }
+
+    .progress p {
+        display: flex;
+        gap: 1.5ch;
+        align-items: baseline;
+        margin: 0.35rem 0;
+        white-space: pre;
+    }
+
+    .progress .lbl {
+        color: var(--ghost-dim);
+        width: 11ch;
+        flex: none;
+    }
+
+    .progress .bar {
+        color: var(--ghost-faint);
+    }
+
+    .progress .bar .on {
+        color: var(--ghost-accent);
+    }
+
+    .progress .pct {
+        color: var(--ghost-dim);
+    }
+
+    .cursor-demo {
+        color: var(--ghost-fg);
+    }
+
+    .cursor-demo .sig {
+        color: var(--ghost-accent);
+    }
+
+    .type-demo {
+        margin-top: 0.5rem;
+    }
+</style>

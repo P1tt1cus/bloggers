@@ -22,7 +22,17 @@ export interface ArtifactTransmission {
   href: string;
 }
 
-export type Transmission = PostTransmission | ArtifactTransmission;
+/** An in-repo .astro page (e.g. the component gallery) listed in the stream. */
+export interface PageTransmission {
+  kind: 'page';
+  slug: string;
+  title: string;
+  date: Date;
+  description: string;
+  href: string;
+}
+
+export type Transmission = PostTransmission | ArtifactTransmission | PageTransmission;
 
 const WORDS_PER_MINUTE = 200;
 
@@ -55,7 +65,18 @@ export async function getTransmissions(): Promise<Transmission[]> {
     href: withBase(`blog/${entry.data.file}`),
   }));
 
-  return [...postEntries, ...artifactEntries].sort(
+  const pages: Transmission[] = [
+    {
+      kind: 'page',
+      slug: 'components',
+      title: 'UI Components',
+      date: new Date('2026-07-08'),
+      description: 'A live gallery of the terminal UI kit — palette, glyphs, spinners, panels',
+      href: withBase('blog/components/'),
+    },
+  ];
+
+  return [...postEntries, ...artifactEntries, ...pages].sort(
     (a, b) => b.date.getTime() - a.date.getTime(),
   );
 }

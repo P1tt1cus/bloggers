@@ -12,9 +12,13 @@ export function initStream(): void {
 
   entries.forEach((entry, index) => {
     entry.addEventListener('click', (e) => {
-      if (entry.dataset.kind !== 'post') {
+      const kind = entry.dataset.kind;
+      if (kind === 'artifact') {
         flashStatus('▓', 'summoning artifact…', 'handed off ↗');
         return; // native <a target="_blank"> navigation
+      }
+      if (kind === 'page') {
+        return; // native same-tab navigation
       }
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       e.preventDefault();
@@ -51,8 +55,11 @@ export const selectLast = (): void => select(entries.length - 1);
 export function openSelected(): void {
   if (selected < 0 || selected >= entries.length) return;
   const el = entries[selected];
-  if (el.dataset.kind === 'post') {
+  const kind = el.dataset.kind;
+  if (kind === 'post') {
     openReader(el.dataset.slug ?? '');
+  } else if (kind === 'page') {
+    window.location.href = el.href; // same-tab internal navigation
   } else {
     // Synchronous window.open keeps popup blockers happy.
     window.open(el.href, '_blank', 'noopener');
